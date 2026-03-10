@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Robopanda Mission Control</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo-icon" style="font-size: 24px;">🐼</span>
+                <span class="logo-text">Robopanda</span>
+                <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+            </div>
+            <nav class="sidebar-menu">
+                <button class="nav-item active" data-target="koneksi" onclick="switchTab('koneksi')">
+                    <span class="icon">🔌</span><span class="lbl">Koneksi</span>
+                </button>
+                <button class="nav-item" data-target="dashboard" onclick="switchTab('dashboard')">
+                    <span class="icon">🎯</span><span class="lbl">Misi Global</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div id="global-hub-count" class="status-badge">0 Hub</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section id="koneksi" class="tab-content active">
+                <header class="section-header">
+                    <h2>Manajemen Perangkat</h2>
+                    <button id="btnConnect" class="btn btn-primary">+ Scan Robot</button>
+                </header>
+                <div id="koneksi-list" class="grid-layout">
+                    <div class="empty-state">Belum ada robot yang terhubung.</div>
+                </div>
+            </section>
+
+            <section id="dashboard" class="tab-content">
+                <header class="section-header">
+                    <h2>Mission Control Center</h2>
+                    <button id="btnStopAll" class="btn btn-danger" onclick="stopAllMissions()">🛑 STOP KELAS</button>
+                </header>
+                <div id="dashboard-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/ble-engine.js"></script>
+    <script src="assets/js/mission.js"></script>
+</body>
+</html><!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Robopanda Mission Control</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo-icon" style="font-size: 24px;">🐼</span>
+                <span class="logo-text">Robopanda</span>
+                <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+            </div>
+            <nav class="sidebar-menu">
+                <button class="nav-item active" data-target="koneksi" onclick="switchTab('koneksi')">
+                    <span class="icon">🔌</span><span class="lbl">Koneksi</span>
+                </button>
+                <button class="nav-item" data-target="dashboard" onclick="switchTab('dashboard')">
+                    <span class="icon">🎯</span><span class="lbl">Misi Global</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div id="global-hub-count" class="status-badge">0 Hub</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section id="koneksi" class="tab-content active">
+                <header class="section-header">
+                    <h2>Manajemen Perangkat</h2>
+                    <button id="btnConnect" class="btn btn-primary">+ Scan Robot</button>
+                </header>
+                <div id="koneksi-list" class="grid-layout">
+                    <div class="empty-state">Belum ada robot yang terhubung.</div>
+                </div>
+            </section>
+
+            <section id="dashboard" class="tab-content">
+                <header class="section-header">
+                    <h2>Mission Control Center</h2>
+                    <button id="btnStopAll" class="btn btn-danger" onclick="stopAllMissions()">🛑 STOP KELAS</button>
+                </header>
+                <div id="dashboard-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/ble-engine.js"></script>
+    <script src="assets/js/mission.js"></script>
+</body>
+</html><!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Robopanda Mission Control</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo-icon" style="font-size: 24px;">🐼</span>
+                <span class="logo-text">Robopanda</span>
+                <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+            </div>
+            <nav class="sidebar-menu">
+                <button class="nav-item active" data-target="koneksi" onclick="switchTab('koneksi')">
+                    <span class="icon">🔌</span><span class="lbl">Koneksi</span>
+                </button>
+                <button class="nav-item" data-target="dashboard" onclick="switchTab('dashboard')">
+                    <span class="icon">🎯</span><span class="lbl">Misi Global</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div id="global-hub-count" class="status-badge">0 Hub</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section id="koneksi" class="tab-content active">
+                <header class="section-header">
+                    <h2>Manajemen Perangkat</h2>
+                    <button id="btnConnect" class="btn btn-primary">+ Scan Robot</button>
+                </header>
+                <div id="koneksi-list" class="grid-layout">
+                    <div class="empty-state">Belum ada robot yang terhubung.</div>
+                </div>
+            </section>
+
+            <section id="dashboard" class="tab-content">
+                <header class="section-header">
+                    <h2>Mission Control Center</h2>
+                    <button id="btnStopAll" class="btn btn-danger" onclick="stopAllMissions()">🛑 STOP KELAS</button>
+                </header>
+                <div id="dashboard-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/ble-engine.js"></script>
+    <script src="assets/js/mission.js"></script>
+</body>
+</html>
