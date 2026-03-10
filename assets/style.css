@@ -1,0 +1,80 @@
+:root {
+    --bg-main: #F4F7F6;
+    --card-bg: #FFFFFF;
+    --text-dark: #2C3E50;
+    --text-muted: #7F8C8D;
+    --primary: #4C97FF;
+    --success: #2ECC71;
+    --danger: #FF4D4D;
+    --warning: #FFBF00;
+    --purple: #9966FF;
+}
+
+* { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+body { margin: 0; background-color: var(--bg-main); overflow: hidden; }
+
+.app-wrapper { display: flex; height: 100vh; width: 100vw; }
+
+.sidebar {
+    width: 240px;
+    background: var(--card-bg);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e2e8f0;
+    transition: width 0.3s ease;
+    z-index: 100;
+}
+
+.sidebar.collapsed { width: 80px; }
+.sidebar.collapsed .logo-text, .sidebar.collapsed .lbl { display: none; }
+
+.sidebar-header {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.sidebar-menu { flex: 1; padding: 20px 10px; display: flex; flex-direction: column; gap: 8px; }
+
+.nav-item {
+    display: flex; align-items: center; gap: 15px; padding: 12px 15px;
+    border: none; background: transparent; border-radius: 12px;
+    cursor: pointer; color: var(--text-muted); font-weight: bold; transition: 0.2s;
+}
+
+.nav-item.active { background: #f0f6ff; color: var(--primary); }
+.nav-item .icon { font-size: 20px; min-width: 30px; }
+
+/* ENRICHMENT: Penambahan padding-bottom 120px untuk fix scroll mentok di layar bawah */
+.main-content { flex: 1; overflow-y: auto; padding: 30px; padding-bottom: 120px; background: var(--bg-main); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.card {
+    background: var(--card-bg); padding: 25px; border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.04); border-top: 6px solid var(--primary);
+    margin-bottom: 20px;
+}
+
+.btn {
+    border: none; padding: 12px 20px; border-radius: 12px; font-weight: bold;
+    cursor: pointer; transition: 0.2s; text-transform: uppercase;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+
+/* =========================================================
+   ENRICHMENT CSS (Penambahan Class Baru Sesuai UI v7.0)
+========================================================= */
+
+/* Warna tombol tambahan untuk Assignment & Local Control */
+.btn-success { background: var(--success); color: white; }
+.btn-warning { background: var(--warning); color: var(--text-dark); }
+
+/* Ruang ekstra khusus di bawah kontainer kartu individual */
+#individual-cards-container {
+    padding-bottom: 50px;
+}
