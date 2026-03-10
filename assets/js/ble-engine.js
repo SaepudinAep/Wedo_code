@@ -1,6 +1,7 @@
 /* =========================================================
-   MODUL 4: BLE-ENGINE.JS (Bluetooth & Hardware Driver)
-   Status: Fix Pembacaan Tilt Sensor & IR Sensor
+   MODUL 4: BLE-ENGINE.JS (v22.0 - SIGNAL MONITORING UPDATE)
+   Status: No Cleaning - RSSI Added - 300ms Button Debounce
+   Features: Signal Strength Tracker, Real-time RSSI, Sync 100ms
 ========================================================= */
 
 const HUB_SERVICE = '00001523-1212-efde-1523-785feabcd123';
@@ -35,38 +36,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cmdChar  = await ioSvc.getCharacteristic(CHAR_IN_CMD);
                 const sensChar = await ioSvc.getCharacteristic(CHAR_SENSOR);
 
+                // ENRICHMENT: MONITORING RSSI (SIGNAL STRENGTH)
+                try {
+                    await device.watchAdvertisements();
+                    device.addEventListener('advertisementreceived', (event) => {
+                        const r = AppState.robots.find(x => x.id === device.id);
+                        if (r) {
+                            r.rssi = event.rssi;
+                            // Update label sinyal jika ada di UI
+                            const signalEl = document.getElementById(`rssi-${device.id}`);
+                            if (signalEl) {
+                                let status = "Weak";
+                                if (r.rssi > -60) status = "Excellent";
+                                else if (r.rssi > -80) status = "Good";
+                                signalEl.innerText = `${r.rssi} dBm (${status})`;
+                                signalEl.style.color = status === "Excellent" ? "#2ecc71" : (status === "Good" ? "#f1c40f" : "#e74c3c");
+                            }
+                        }
+                    });
+                } catch (rssiErr) { console.warn("RSSI monitoring tidak didukung di browser ini."); }
+
                 await btnChar.startNotifications();
                 btnChar.addEventListener('characteristicvaluechanged', async (e) => {
                     const pressed = e.target.value.getUint8(0) === 1;
                     const r = AppState.robots.find(x => x.id === device.id);
                     if (r) {
                         r.isButtonPressed = pressed;
-                        
-                        if (pressed) {
-                            await setRGB(r.id, 255, 255, 255); 
-                        } else {
-                            if (r.isReady) {
-                                await setRGB(r.id, 0, 255, 0); 
-                            } else {
-                                const c = r.currentColor || {r:0, g:0, b:255};
-                                await setRGB(r.id, c.r, c.g, c.b); 
-                            }
-                        }
-
-                        const btnLabel = document.getElementById(`btn-state-${r.id}`);
-                        if (btnLabel) {
-                            btnLabel.innerHTML = pressed ? ' FISIK DITEKAN' : ' FISIK LEPAS';
-                            btnLabel.style.color = pressed ? 'red' : '#ccc';
-                        }
-
                         if (pressed) {
                             const now = Date.now();
-                            if (!r.lastBtnPress || now - r.lastBtnPress > 1000) {
+                            // FIX DEBOUNCE: Dari 1000ms ke 300ms agar lebih responsif
+                            if (!r.lastBtnPress || now - r.lastBtnPress > 300) {
                                 r.lastBtnPress = now;
                                 if (typeof window.handlePhysicalButton === 'function') {
                                     window.handlePhysicalButton(r.id);
                                 }
                             }
+                        }
+                        const btnLabel = document.getElementById(`btn-state-${r.id}`);
+                        if (btnLabel) {
+                            btnLabel.innerHTML = pressed ? ' FISIK DITEKAN' : ' FISIK LEPAS';
+                            btnLabel.style.color = pressed ? 'red' : '#ccc';
                         }
                     }
                 });
@@ -77,29 +86,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     const now = Date.now();
                     const r = AppState.robots.find(x => x.id === device.id);
                     
-                    // SOLUSI TILT: Hapus batas minimal 6 byte, ganti minimal 3 byte
-                    if (r && data.byteLength >= 3 && (!r.lastSensorUpdate || now - r.lastSensorUpdate >= AppState.globalRate)) {
+                    // SYNC RATE: Pastikan minimal secepat Logic Engine (100ms)
+                    if (r && data.byteLength >= 3 && (!r.lastSensorUpdate || now - r.lastSensorUpdate >= 100)) {
                         const port = data.getUint8(1);
                         let val = 0;
-
                         if (data.byteLength >= 6) {
-                            // Paket Data IR Sensor (Float32)
                             val = Math.round(data.getFloat32(2, true) * 10) / 10;
                         } else {
-                            // Paket Data Tilt Sensor (Integer Bulat)
                             val = data.getUint8(2);
                         }
-
                         r.lastSensorVal = val;
                         r.lastSensorUpdate = now;
-                        const el = document.getElementById(`sens${port}-${device.id}`);
+                        const el = document.getElementById(`sens${(port === 1 ? '1' : '2')}-${device.id}`);
                         if (el) el.innerText = val;
                     }
-                });
-
-                device.addEventListener('gattserverdisconnected', () => {
-                    AppState.robots = AppState.robots.filter(x => x.id !== device.id);
-                    updateUI();
                 });
 
                 AppState.robots.push({ 
@@ -109,13 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     out: outChar, 
                     cmd: cmdChar, 
                     nameC: nameChar,
-                    rssi: -50,
-                    isExecuting: false,
                     isReady: false,
+                    isRunning: false,
+                    rssi: -100, // Default nilai lemah
                     currentColor: {r:0, g:0, b:255}, 
                     lastSensorVal: 0
                 });
-
                 updateUI();
             } catch (err) { console.error("Koneksi gagal:", err); }
         });
