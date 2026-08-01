@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoboPanda - Scratch Engine with Sensor Selector</title>
+    <style>
+        body { font-family: monospace; background: #0f1117; color: #e8eaf0; margin: 0; padding: 20px; }
+        .card { background: #1a1f2e; border: 1px solid #2e3555; border-radius: 8px; padding: 20px; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+        h2 { margin-top: 0; color: #00d4aa; font-size: 18px; border-bottom: 1px solid #2e3555; padding-bottom: 10px; }
+        button { background: #00d4aa; color: #0f1117; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-family: monospace; font-size: 13px; }
+        button:hover { background: #00b38f; }
+        .btn-stop { background: #ff4757; color: #fff; }
+        .btn-stop:hover { background: #e03545; }
+        .btn-secondary { background: #3498db; color: #fff; }
+        .btn-secondary:hover { background: #2980b9; }
+        .button-row { display: flex; gap: 10px; margin-top: 10px; }
+        .button-row button { margin-top: 0; }
+        .sensor-box { background: #222840; padding: 12px; margin-top: 12px; border-radius: 6px; border-left: 4px solid #00d4aa; }
+        .log-box { background: #0f1117; color: #00ffcc; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 11px; height: 200px; overflow-y: auto; margin-top: 15px; border: 1px solid #2e3555; }
+        .status-val { font-weight: bold; color: #ffd32a; }
+        select { background: #0f1117; color: #00ffcc; border: 1px solid #2e3555; padding: 6px; border-radius: 4px; font-family: monospace; width: 100%; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>RoboPanda Scratch Engine + Sensor Selector</h2>
+        <button id="btnConnect">Hubungkan Hub WeDo 2.0</button>
+        <p>Status: <span id="statusText" class="status-val">Terputus</span></p>
+
+        <div class="sensor-box">
+            <strong>Port 1 Perangkat:</strong> <span id="port1Type">Kosong</span><br>
+            <label style="font-size: 11px; color: #a4b0be; display: block; margin-top: 6px;">Pilih Sensor / Perangkat Port 1:</label>
+            <select id="selectorPort1" onchange="manualSetSensor(1, this.value)">
+                <option value="none">-- Pilih Jenis Perangkat --</option>
+                <option value="motor">DC Motor</option>
+                <option value="distance">Distance / IR Sensor</option>
+                <option value="tilt">Tilt Sensor</option>
+            </select>
+            <div style="margin-top: 8px;">
+                <strong>Nilai:</strong> <span id="port1Val" style="font-size: 18px; color: #2ed573;">0</span>
+            </div>
+            <div style="margin-top: 8px; display: flex; gap: 8px;">
+                <button onclick="runScratchMotor(1, 100)">Motor Maju</button>
+                <button class="btn-stop" onclick="runScratchMotor(1, 0)">Stop Motor</button>
+            </div>
+        </div>
+
+        <div class="sensor-box">
+            <strong>Port 2 Perangkat:</strong> <span id="port2Type">Kosong</span><br>
+            <label style="font-size: 11px; color: #a4b0be; display: block; margin-top: 6px;">Pilih Sensor / Perangkat Port 2:</label>
+            <select id="selectorPort2" onchange="manualSetSensor(2, this.value)">
+                <option value="none">-- Pilih Jenis Perangkat --</option>
+                <option value="motor">DC Motor</option>
+                <option value="distance">Distance / IR Sensor</option>
+                <option value="tilt">Tilt Sensor</option>
+            </select>
+            <div style="margin-top: 8px;">
+                <strong>Nilai:</strong> <span id="port2Val" style="font-size: 18px; color: #2ed573;">0</span>
+            </div>
+            <div style="margin-top: 8px; display: flex; gap: 8px;">
+                <button onclick="runScratchMotor(2, 100)">Motor Maju</button>
+                <button class="btn-stop" onclick="runScratchMotor(2, 0)">Stop Motor</button>
+            </div>
+        </div>
+
+        <div class="button-row" style="margin-top: 15px;">
+            <button class="btn-secondary" onclick="copyLogs()">Salin Log</button>
+            <button class="btn-stop" onclick="clearLogs()">Bersihkan Log</button>
+        </div>
+    </div>
+
+    <div class="log-box" id="systemLog">
+        [SYSTEM] Siap menerima koneksi dan pengaturan sensor manual...
+    </div>
+
+    <script>
+        const BLEService = {
+            DEVICE_SERVICE: '00001523-1212-efde-1523-785feabcd123',
+            IO_SERVICE: '00004f0e-1212-efde-1523-785feabcd123'
+        };
+
+        const BLECharacteristic = {
+            ATTACHED_IO: '00001527-1212-efde-1523-785feabcd123',
+            LOW_VOLTAGE_ALERT: '00001528-1212-efde-1523-785feabcd123',
+            INPUT_VALUES: '00001560-1212-efde-1523-785feabcd123',
+            INPUT_COMMAND: '00001563-1212-efde-1523-785feabcd123',
+            OUTPUT_COMMAND: '00001565-1212-efde-1523-785feabcd123'
+        };
+
+        const WeDo2Device = {
+            MOTOR: 1,
+            PIEZO: 22,
+            LED: 23,
+            TILT: 34,
+            DISTANCE: 35
+        };
+
+        const WeDo2ConnectID = {
+            LED: 6,
+            PIEZO: 5
+        };
+
+        const WeDo2Command = {
+            MOTOR_POWER: 1,
+            PLAY_TONE: 2,
+            STOP_TONE: 3,
+            WRITE_RGB: 4
+        };
+
+        const WeDo2Mode = {
+            TILT: 0,
+            DISTANCE: 0,
+            LED: 1
+        };
+
+        const WeDo2Unit = {
+            TILT: 0,
+            DISTANCE: 1,
+            LED: 0
+        };
+
+        class WeDo2Motor {
+            constructor (parent, index) {
+                this._parent = parent;
+                this._index = index;
+                this._direction = 1;
+                this._power = 100;
+                this._isOn = false;
+            }
+
+            turnOn () {
+                if (this._power === 0) return;
+                const p = Math.max(0, Math.min(this._power, 100));
+                let scaledPower = p === 0 ? 0 : 30 + (70 / (100 / p));
+                
+                const cmd = this._parent.generateOutputCommand(
+                    this._index + 1,
+                    WeDo2Command.MOTOR_POWER,
+                    [Math.round(scaledPower * this._direction)]
+                );
+                this._parent.send(BLECharacteristic.OUTPUT_COMMAND, cmd);
+                this._isOn = true;
+            }
+
+            turnOff (useLimiter = true) {
+                const cmd = this._parent.generateOutputCommand(
+                    this._index + 1,
+                    WeDo2Command.MOTOR_POWER,
+                    [0]
+                );
+                this._parent.send(BLECharacteristic.OUTPUT_COMMAND, cmd, useLimiter);
+                this._isOn = false;
+            }
+        }
+
+        class NativeWeDo2Engine {
+            constructor () {
+                this._ports = ['none', 'none'];
+                this._motors = [null, null];
+                this._sensors = { tiltX: 0, tiltY: 0, distance: 0 };
+                this.bleDevice = null;
+                this.bleServer = null;
+                this.chars = {};
+            }
+
+            async connect () {
+                logMessage("Memindai Hub WeDo 2.0...");
+                this.bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [BLEService.DEVICE_SERVICE] }],
+                    optionalServices: [BLEService.IO_SERVICE, 'battery_service', '0000180a-0000-1000-8000-00805f9b34fb']
+                });
+
+                this.bleDevice.addEventListener('gattserverdisconnected', () => {
+                    logMessage("Hub terputus.", "error");
+                    document.getElementById('statusText').innerText = "Terputus";
+                    document.getElementById('statusText').style.color = "#ff4757";
+                });
+
+                logMessage("Menghubungkan ke GATT Server...");
+                this.bleServer = await this.bleDevice.gatt.connect();
+
+                const hubService = await this.bleServer.getPrimaryService(BLEService.DEVICE_SERVICE);
+                let ioService;
+                try {
+                    ioService = await this.bleServer.getPrimaryService(BLEService.IO_SERVICE);
+                } catch (e) {
+                    ioService = hubService;
+                }
+
+                this.chars.attachedIo = await hubService.getCharacteristic(BLECharacteristic.ATTACHED_IO);
+                this.chars.inputCommand = await ioService.getCharacteristic(BLECharacteristic.INPUT_COMMAND);
+                this.chars.outputCommand = await ioService.getCharacteristic(BLECharacteristic.OUTPUT_COMMAND);
+                this.chars.inputValues = await ioService.getCharacteristic(BLECharacteristic.INPUT_VALUES);
+
+                await this.chars.attachedIo.startNotifications();
+                this.chars.attachedIo.addEventListener('characteristicvaluechanged', (e) => {
+                    this._onMessage(e.target.value);
+                });
+
+                await this.chars.inputValues.startNotifications();
+                this.chars.inputValues.addEventListener('characteristicvaluechanged', (e) => {
+                    this._onMessage(e.target.value);
+                });
+
+                document.getElementById('statusText').innerText = "Terhubung & Aktif";
+                document.getElementById('statusText').style.color = "#2ed573";
+                logMessage(`Berhasil terhubung penuh ke: ${this.bleDevice.name || 'WeDo Hub'}`, "packet");
+
+                this.setLEDMode();
+                this.setLED(0x0000FF);
+            }
+
+            setLED (inputRGB) {
+                const rgb = [
+                    (inputRGB >> 16) & 0xFF,
+                    (inputRGB >> 8) & 0xFF,
+                    inputRGB & 0xFF
+                ];
+                const cmd = this.generateOutputCommand(WeDo2ConnectID.LED, WeDo2Command.WRITE_RGB, rgb);
+                this.send(BLECharacteristic.OUTPUT_COMMAND, cmd);
+            }
+
+            setLEDMode () {
+                const cmd = this.generateInputCommand(WeDo2ConnectID.LED, WeDo2Device.LED, WeDo2Mode.LED, 0, WeDo2Unit.LED, false);
+                this.send(BLECharacteristic.INPUT_COMMAND, cmd);
+            }
+
+            send (uuid, message) {
+                if (!this.bleServer) return Promise.resolve();
+                const dataArray = new Uint8Array(message);
+                
+                if (uuid === BLECharacteristic.INPUT_COMMAND && this.chars.inputCommand) {
+                    return this.chars.inputCommand.writeValue(dataArray);
+                } else if (uuid === BLECharacteristic.OUTPUT_COMMAND && this.chars.outputCommand) {
+                    return this.chars.outputCommand.writeValue(dataArray);
+                }
+                return Promise.resolve();
+            }
+
+            generateOutputCommand (connectID, commandID, values = null) {
+                let command = [connectID, commandID];
+                if (values) {
+                    command = command.concat(values.length).concat(values);
+                }
+                return command;
+            }
+
+            generateInputCommand (connectID, type, mode, delta, units, enableNotifications) {
+                return [
+                    1, 2, connectID, type, mode, delta, 0, 0, 0, units, enableNotifications ? 1 : 0
+                ];
+            }
+
+            _onMessage (dataView) {
+                const data = new Uint8Array(dataView.buffer);
+                
+                switch (data[0]) {
+                case 1:
+                case 2: {
+                    const connectID = data[0];
+                    if (data[1] === 0) {
+                        this._clearPort(connectID);
+                    } else {
+                        this._registerSensorOrMotor(connectID, data[3]);
+                    }
+                    break;
+                }
+                default: {
+                    const connectID = data[1];
+                    const type = this._ports[connectID - 1];
+                    if (type === WeDo2Device.DISTANCE) {
+                        this._sensors.distance = data[2];
+                        document.getElementById(`port${connectID}Val`).innerText = data[2];
+                    }
+                    if (type === WeDo2Device.TILT) {
+                        this._sensors.tiltX = data[2];
+                        this._sensors.tiltY = data[3];
+                        document.getElementById(`port${connectID}Val`).innerText = `X:${data[2]}, Y:${data[3]}`;
+                    }
+                    break;
+                }
+                }
+            }
+
+            _registerSensorOrMotor (connectID, type) {
+                this._ports[connectID - 1] = type;
+                let typeName = `TypeID (${type})`;
+                let selectVal = 'none';
+
+                if (type === WeDo2Device.MOTOR) {
+                    typeName = "DC Motor";
+                    selectVal = 'motor';
+                    this._motors[connectID - 1] = new WeDo2Motor(this, connectID - 1);
+                } else if (type === WeDo2Device.DISTANCE) {
+                    typeName = "Distance / IR Sensor";
+                    selectVal = 'distance';
+                    const cmd = this.generateInputCommand(connectID, type, WeDo2Mode.DISTANCE, 1, WeDo2Unit.DISTANCE, true);
+                    this.send(BLECharacteristic.INPUT_COMMAND, cmd);
+                } else if (type === WeDo2Device.TILT) {
+                    typeName = "Tilt Sensor";
+                    selectVal = 'tilt';
+                    const cmd = this.generateInputCommand(connectID, type, WeDo2Mode.TILT, 1, WeDo2Unit.TILT, true);
+                    this.send(BLECharacteristic.INPUT_COMMAND, cmd);
+                }
+
+                document.getElementById(`port${connectID}Type`).innerText = typeName;
+                document.getElementById(`selectorPort${connectID}`).value = selectVal;
+                logMessage(`[PORT AUTO] Port ${connectID} terdaftar: ${typeName}`, "packet");
+            }
+
+            _clearPort (connectID) {
+                this._ports[connectID - 1] = 'none';
+                this._motors[connectID - 1] = null;
+                document.getElementById(`port${connectID}Type`).innerText = "Kosong";
+                document.getElementById(`port${connectID}Val`).innerText = "0";
+                document.getElementById(`selectorPort${connectID}`).value = 'none';
+                logMessage(`[PORT AUTO] Port ${connectID} dicabut`, "warn");
+            }
+
+            motor (index) {
+                return this._motors[index];
+            }
+        }
+
+        const scratchEngine = new NativeWeDo2Engine();
+
+        document.getElementById('btnConnect').addEventListener('click', async () => {
+            try {
+                await scratchEngine.connect();
+            } catch (err) {
+                logMessage(`Koneksi Gagal: ${err.message}`, "error");
+            }
+        });
+
+        // Fungsi Selector Manual untuk Memaksa Registrasi Sensor
+        function manualSetSensor (portNum, sensorType) {
+            if (!scratchEngine.bleServer) {
+                alert("Hub belum terhubung!");
+                document.getElementById(`selectorPort${portNum}`).value = 'none';
+                return;
+            }
+
+            let typeID = 0;
+            if (sensorType === 'motor') typeID = WeDo2Device.MOTOR;
+            else if (sensorType === 'distance') typeID = WeDo2Device.DISTANCE;
+            else if (sensorType === 'tilt') typeID = WeDo2Device.TILT;
+
+            if (sensorType === 'none') {
+                scratchEngine._clearPort(portNum);
+                logMessage(`[MANUAL] Port ${portNum} dikosongkan.`, "warn");
+                return;
+            }
+
+            logMessage(`[MANUAL] Memaksa konfigurasi Port ${portNum} sebagai ${sensorType}...`, "warn");
+            scratchEngine._registerSensorOrMotor(portNum, typeID);
+
+            // Jika tipe sensor, kirim ulang sinyal start notifikasi format input standar Scratch
+            if (typeID === WeDo2Device.DISTANCE || typeID === WeDo2Device.TILT) {
+                const mode = typeID === WeDo2Device.DISTANCE ? WeDo2Mode.DISTANCE : WeDo2Mode.TILT;
+                const unit = typeID === WeDo2Device.DISTANCE ? WeDo2Unit.DISTANCE : WeDo2Unit.TILT;
+                const cmd = scratchEngine.generateInputCommand(portNum, typeID, mode, 1, unit, true);
+                scratchEngine.send(BLECharacteristic.INPUT_COMMAND, cmd);
+            }
+        }
+
+        function runScratchMotor (portNum, powerVal) {
+            const motorInst = scratchEngine.motor(portNum - 1);
+            if (motorInst) {
+                motorInst._power = powerVal;
+                if (powerVal > 0) {
+                    motorInst.turnOn();
+                } else {
+                    motorInst.turnOff();
+                }
+                logMessage(`Motor Port ${portNum} dijalankan: ${powerVal}%`, "packet");
+            } else {
+                alert(`Port ${portNum} belum diatur sebagai DC Motor! Silakan pilih DC Motor pada selector.`);
+            }
+        }
+
+        function logMessage(msg, type = 'info') {
+            const box = document.getElementById('systemLog');
+            let color = '#00ffcc';
+            if (type === 'warn') color = '#ffd32a';
+            if (type === 'error') color = '#ff4757';
+            if (type === 'packet') color = '#2ed573';
+            box.innerHTML += `<br><span style="color:${color}">[${new Date().toLocaleTimeString()}] ${msg}</span>`;
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('systemLog').innerHTML = '[SYSTEM] Log dibersihkan.';
+        }
+
+        function copyLogs() {
+            const box = document.getElementById('systemLog');
+            navigator.clipboard.writeText(box.innerText || box.textContent).then(() => {
+                logMessage("Log berhasil disalin ke clipboard!", "packet");
+            });
+        }
+    </script>
+</body>
+</html>
