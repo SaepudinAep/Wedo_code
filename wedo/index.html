@@ -1,13 +1,13 @@
-<!-- Code Version: v39.3-Pro-Industrial-AntiJitter-Tilt-Engine -->
+<!-- Code Version: v40.6-Pro-MultiHub-RateLimit10-KeepAlive200ms -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoboPanda - Ultimate Unified Mission Engine v39.3 🐼</title>
+    <title>RoboPanda - Ultimate Unified Mission Engine v40.6 🐼</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
-        
+
         :root {
             --bg-main: #f4f7f6;
             --bg-card: #ffffff;
@@ -17,18 +17,30 @@
             --accent-red: #ff7675;
             --accent-yellow: #fdcb6e;
             --border-soft: #dfe6e9;
+            --hub-0: #0984e3;
+            --hub-1: #00b894;
+            --hub-2: #fdcb6e;
+            --hub-3: #e84393;
         }
 
-        body { font-family: 'Nunito', sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; }
-        .wrapper { max-width: 850px; margin: 0 auto; }
-        
-        .top-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: var(--bg-card); padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        h1 { font-size: 18px; color: var(--accent-blue); margin: 0; font-weight: 900; }
-        
+        body { font-family: 'Nunito', sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 12px; }
+        .wrapper { max-width: 980px; margin: 0 auto; }
+
+        .top-actions { position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; background: var(--bg-card); padding: 10px 16px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); flex-wrap: wrap; }
+        h1 { font-size: 17px; color: var(--accent-blue); margin: 0; font-weight: 900; }
+
+        .status-dots { display: flex; gap: 6px; align-items: center; }
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; background: #dfe6e9; border: 2px solid #fff; box-shadow: 0 0 0 2px var(--dot-color, #dfe6e9); transition: 0.2s; }
+        .status-dot.connected { background: var(--accent-green); }
+        .status-dot.running { background: var(--accent-blue); animation: pulseDot 1s infinite; }
+        @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+        .status-dots-empty { font-size: 10px; color: #b2bec3; font-weight: bold; }
+
         button { background: var(--accent-blue); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: 'Nunito', sans-serif; font-size: 12px; transition: 0.2s; box-shadow: 0 2px 4px rgba(9, 132, 227, 0.2); }
         button:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(9, 132, 227, 0.3); }
+        button:active { transform: translateY(0); }
         button:disabled { opacity: 0.4; cursor: not-allowed; }
-        
+
         .btn-green { background: var(--accent-green); box-shadow: 0 2px 4px rgba(0, 184, 148, 0.2); }
         .btn-green:hover { background: #00a885; }
         .btn-red { background: var(--accent-red); box-shadow: 0 2px 4px rgba(255, 118, 117, 0.2); }
@@ -36,35 +48,61 @@
         .btn-warning { background: var(--accent-yellow); color: #2d3436; }
         .btn-primary { background: var(--accent-blue); }
 
-        .card { background: var(--bg-card); border: 2px solid var(--border-soft); border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .card { background: var(--bg-card); border: 2px solid var(--border-soft); border-radius: 14px; padding: 14px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
         .card h2 { margin-top: 0; color: var(--accent-blue); font-size: 15px; border-bottom: 2px dashed var(--border-soft); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        
-        .ports-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+
+        /* ---- GRID EFISIEN UNTUK MULTI-HUB (hingga 4 hub, 2x2) ---- */
+        #hubsContainer { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        @media (max-width: 680px) {
+            #hubsContainer { grid-template-columns: 1fr; }
+        }
+
+        .hub-card { background: var(--bg-card); border: 2px solid var(--border-soft); border-left-width: 6px; border-radius: 12px; padding: 10px 12px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
+        .hub-card .card-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+        .hub-card .hub-name { font-size: 13px; font-weight: 900; margin: 0; }
+        .hub-card .head-btns { display: flex; gap: 4px; }
+        .hub-card .head-btns button { padding: 4px 8px; font-size: 9px; }
+
+        .status-badge-row { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: bold; margin-top: 4px; flex-wrap: wrap; }
+        .status-badge { padding: 2px 8px; border-radius: 20px; background: #f1f2f6; color: #636e72; }
+        .status-badge.ok { background: #d4f7ea; color: #00785a; }
+        .status-badge.running { background: #d6ebfa; color: #045a8f; }
+
+        .state-flag { font-size: 10px; font-weight: bold; color: #2980b9; background: #ebf5fb; padding: 3px 8px; border-radius: 6px; margin-top: 5px; display: none; }
+
+        .port-row { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 5px 7px; background: #f8fafc; border-radius: 7px; margin-top: 5px; }
+        .port-row .port-label { font-weight: 900; color: var(--accent-blue); min-width: 44px; }
+        .port-row .port-type { color: #636e72; font-size: 10px; }
+        .port-row .port-val { font-weight: 900; color: var(--accent-green); margin-left: auto; margin-right: 2px; min-width: 18px; text-align: right; }
+        .port-row .mini-btn { padding: 3px 7px; font-size: 10px; margin: 0; }
+
+        .ports-grid { display: grid; grid-template-columns: 1fr; gap: 4px; margin-top: 6px; }
         .sensor-box { background: #f8fafc; padding: 10px; border-radius: 8px; border-left: 4px solid var(--accent-blue); font-size: 12px; }
         .status-val { font-weight: bold; color: var(--accent-yellow); }
-        
+
         select, input { background: #fff; color: var(--text-main); border: 1.5px solid var(--border-soft); padding: 6px; border-radius: 6px; font-family: 'Nunito', sans-serif; font-weight: bold; font-size: 11px; width: 100%; margin-top: 4px; }
         select:focus, input:focus { outline: none; border-color: var(--accent-blue); }
-        
+
         .button-row { display: flex; gap: 6px; margin-top: 8px; }
         .button-row button { flex: 1; padding: 6px; font-size: 11px; margin: 0; }
-        
+
         .log-box { background: #2d3436; color: #00cec9; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 11px; height: 120px; overflow-y: auto; margin-top: 15px; border: 2px solid var(--border-soft); }
-        .empty-state { color: #b2bec3; text-align: center; padding: 25px; border: 2px dashed var(--border-soft); border-radius: 12px; font-weight: bold; font-size: 13px; background: #fafbfc; }
+        .empty-state { color: #b2bec3; text-align: center; padding: 25px; border: 2px dashed var(--border-soft); border-radius: 12px; font-weight: bold; font-size: 13px; background: #fafbfc; grid-column: 1 / -1; }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
     <div class="top-actions">
-        <h1>🐼 RoboPanda Unified Control v39.3</h1>
+        <h1>🐼 RoboPanda Unified Control v40.6</h1>
+        <div class="status-dots" id="globalStatusDots"><span class="status-dots-empty">Belum ada hub</span></div>
         <button class="btn-green" id="btnConnect">+ Hubungkan Hub</button>
     </div>
 
     <!-- PANEL PUSAT KONTROL MISI -->
     <div class="card">
         <h2>📋 Global Mission Builder & Command Center</h2>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:8px; background:#f8fafc; border-radius:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:8px; background:#f8fafc; border-radius:8px; flex-wrap:wrap; gap:6px;">
             <div style="font-size:11px; font-weight:bold; display:flex; gap:6px; align-items:center;">
                 <span>Warna LED Global:</span>
                 <input type="color" id="global-color" value="#9966FF" style="width:25px; height:25px; border:none; cursor:pointer;" onchange="setGlobalColor()">
@@ -79,41 +117,66 @@
 
     <!-- CONTAINER KARTU ROBOT/HUB -->
     <div id="hubsContainer">
-        <div class="empty-state" id="emptyState">Belum ada hub. Klik "+ Hubungkan Hub" untuk mulai.</div>
+        <div class="empty-state" id="emptyState">Belum ada hub. Klik "+ Hubungkan Hub" untuk mulai (maks. 4 hub).</div>
     </div>
 
     <div class="button-row">
         <button class="btn-primary" onclick="copyLogs()">Salin Log</button>
         <button class="btn-red" onclick="clearLogs()">Bersihkan Log</button>
     </div>
-    <div class="log-box" id="systemLog">[SYSTEM v39.3] Strict Quantization & Anti-Jitter Byte Engine (0-255) Aktif...</div>
+    <div class="log-box" id="systemLog">[SYSTEM v40.6] Rate Limit 10/detik + KeepAlive 200ms + Protokol Resmi Aktif...</div>
 </div>
 
 <script>
     window.AppState = { robots: [] };
 
+    // Palet warna tetap per-hub, dipakai untuk border kartu & status dot agar mudah
+    // dicocokkan dengan stiker warna fisik di badan robot. Maks. 4 hub.
+    const HUB_COLORS = ['#0984e3', '#00b894', '#fdcb6e', '#e84393'];
+
+    // ================== KONFIGURASI KALIBRASI TILT SENSOR ==================
+    // Kalau arah kiri/kanan/depan/belakang terbalik setelah tes di hardware,
+    // cukup ubah invertX / invertY di sini, TIDAK perlu ubah logic snapTiltValue.
+    const TiltConfig = {
+        deadZoneDeg: 12,   // Sesuaikan hasil tes fisik (kalau terlalu sensitif, naikkan; kalau kurang responsif, turunkan)
+        invertX: false,
+        invertY: false
+    };
+
     window.GlobalMission = {
         type: 'm1',
         m2Loop: false,
-        m3TriggerPort: 'A',
-        m4TriggerPort: 'A',
         m5TriggerPort: 'A',
         m5SensorType: 'distance',
         m5Operator: '<',
         m5TriggerVal: 5,
         isExecuting: false,
         defaultActions: [{ port: 'A', direction: 1, speed: 100 }],
-        rows: [
-            { 
-                time: 2, 
-                sensorPort: 'A', 
-                sensorType: 'distance', 
-                operator: '<', 
-                threshold: 5, 
-                actions: [{ port: 'A', direction: 1, speed: 100 }],
-                steps: [{ time: 2, actions: [{ port: 'A', direction: 1, speed: 100 }] }] 
+
+        // --- Setiap mode sekarang punya array/objek SENDIRI dengan bentuk data konsisten. ---
+        // Ini memperbaiki bug lama: dulu m2/m3/m4 berbagi 1 array "rows" dengan bentuk
+        // objek berbeda-beda, sehingga pindah dropdown mission setelah menambah baris
+        // di satu mode bisa bikin render mode lain crash (field yang dibaca undefined).
+        m1Row: { actions: [{ port: 'A', direction: 1, speed: 100 }] },
+
+        m2Rows: [
+            { time: 2, actions: [{ port: 'A', direction: 1, speed: 100 }] }
+        ],
+
+        m3Rows: [
+            {
+                sensorPort: 'A',
+                sensorType: 'distance',
+                operator: '<',
+                threshold: 5,
+                steps: [{ time: 2, actions: [{ port: 'A', direction: 1, speed: 100 }] }]
             }
         ],
+
+        m4Rows: [
+            { sensorPort: 'A', sensorType: 'tilt', operator: '==', threshold: 0, actions: [{ port: 'A', direction: 1, speed: 100 }] }
+        ],
+
         states: [
             { actions: [{ port: 'A', direction: 1, speed: 100 }] },
             { actions: [{ port: 'A', direction: 0, speed: 0 }] }
@@ -138,6 +201,34 @@
     const WeDo2Command = { MOTOR_POWER: 1, WRITE_RGB: 4 };
     const WeDo2Mode = { TILT: 0, DISTANCE: 0, LED: 1 };
     const WeDo2Unit = { TILT: 0, DISTANCE: 1, LED: 0 };
+    const MAX_HUBS = 4;
+
+    // Maksimal perintah BLE (writeValue) yang boleh terkirim per detik, PER HUB.
+    // Meniru BLESendRateMax di ekstensi resmi (di sana defaultnya 20/detik) -- di
+    // sini sengaja lebih ketat (10/detik) sesuai permintaan, supaya hub yang lebih
+    // "rewel" (mis. robopanda D) tidak kebanjiran perintah beruntun.
+    const BLESendRateMax = 10;
+
+    // Rate limiter sederhana (rolling 1 detik) -- satu instance per hub, dipasang
+    // di constructor NativeWeDo2Engine. Kalau limit terlampaui, perintah BARU
+    // dilewati (drop), bukan diantre menumpuk -- persis perilaku resmi.
+    class RateLimiter {
+        constructor (maxCallsPerSecond) {
+            this.maxCallsPerSecond = maxCallsPerSecond;
+            this._timestamps = [];
+        }
+        okayToSend () {
+            const now = Date.now();
+            while (this._timestamps.length && now - this._timestamps[0] > 1000) {
+                this._timestamps.shift();
+            }
+            if (this._timestamps.length < this.maxCallsPerSecond) {
+                this._timestamps.push(now);
+                return true;
+            }
+            return false;
+        }
+    }
 
     window.getPlayableEntities = function() {
         return AppState.robots.map(r => ({ id: r.id, name: r.name, hub1: r.id, hub2: null }));
@@ -151,46 +242,131 @@
         return { r: 153, g: 102, b: 255 };
     };
 
-    // INDUSTRIAL QUANTIZER & ANTI-JITTER ENGINE UNTUK RENTANG 0-255 (TILT WEEDO 2.0)
-    // Menangani 2 sumbu: data byte pertama (data[2]) & kedua (data[3]) jika dikirim bersamaan, atau dipetakan dari titik tengah 128.
+    // ================== TILT SENSOR: UNWRAP + SNAP (DIPERBAIKI) ==================
+    // Berdasarkan protokol resmi WeDo 2.0 (referensi scratch-vm): raw byte tilt X/Y
+    // (0-255) sebenarnya adalah signed byte yang di-wrap, bukan skala linear
+    // dengan titik tengah 128. Nilai > 127 berarti sudut negatif: byteVal - 256.
+    // Versi lama fungsi ini TIDAK melakukan unwrap ini, sehingga sudut kecil negatif
+    // (misal raw 250 = -6 derajat) terbaca seolah penyimpangan besar (250) -> salah baca.
+    function unwrapSignedByte(byteVal) {
+        if (byteVal === undefined || byteVal === null) return 0;
+        return byteVal > 127 ? byteVal - 256 : byteVal;
+    }
+
+    // Output kode HARUS singkron dengan getTiltSelectorOptions():
+    // 0=Datar, 3=Belakang, 5=Depan, 7=Kanan, 9=Kiri
+    // (versi lama tertukar: menghasilkan 5=Kanan/9=Kiri/3=Depan/7=Belakang - beda dengan label UI)
     function snapTiltValue(rawX, rawY) {
-        const CENTER = 0;
-        const DEAD_ZONE = 30; // Toleransi deadband agar tidak jitter di posisi datar
+        let angleX = unwrapSignedByte(rawX);
+        let angleY = unwrapSignedByte(rawY);
+        if (TiltConfig.invertX) angleX = -angleX;
+        if (TiltConfig.invertY) angleY = -angleY;
 
-        const deltaX = (rawX !== undefined ? rawX : CENTER) - CENTER;
-        const deltaY = (rawY !== undefined ? rawY : CENTER) - CENTER;
-
-        // 1. Jika perubahan dari titik tengah masih dalam area toleransi, return 0 (Netral)
-        if (Math.abs(deltaX) <= DEAD_ZONE && Math.abs(deltaY) <= DEAD_ZONE) {
-            return 0; 
+        if (Math.abs(angleX) <= TiltConfig.deadZoneDeg && Math.abs(angleY) <= TiltConfig.deadZoneDeg) {
+            return 0; // Datar / Netral
         }
 
-        // 2. Bandingkan komponen penyimpangan terbesar (sumbu dominan)
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-            // Sumbu X: Kanan (5) atau Kiri (9)
-            return deltaX > 0 ? 5 : 9;
+        if (Math.abs(angleX) > Math.abs(angleY)) {
+            return angleX > 0 ? 7 : 9; // 7 = Kanan, 9 = Kiri
         } else {
-            // Sumbu Y: Depan (3) atau Belakang (7)
-            return deltaY > 0 ? 3 : 7;
+            return angleY > 0 ? 5 : 3; // 5 = Depan, 3 = Belakang
         }
     }
+
+    // Skala mentah sensor IR/distance WeDo 2.0 clone kamu: 0-100, dropdown
+    // ambang batas ditampilkan per kelipatan 10 (0,10,20,...,100) untuk
+    // kemudahan pemilihan, sementara getSensorVal tetap boleh membaca nilai
+    // presisi penuh 0-100 (tidak ikut dibulatkan ke kelipatan 10).
+    const DistanceConfig = { maxRaw: 100, step: 10 };
 
     window.getSensorVal = function(hubId, portChar, sType) {
         var pNum = (portChar === 'A' || portChar === 'C') ? 1 : 2;
         var div = document.getElementById('port' + pNum + 'Val-' + hubId.replace('hub_', ''));
-        
+
         if (!div || div.innerText === '--' || div.innerText.trim() === '') {
-            return sType === 'distance' ? 10 : 0;
+            return sType === 'distance' ? DistanceConfig.maxRaw : 0;
         }
         var val = parseFloat(div.innerText);
-        if (isNaN(val)) return sType === 'distance' ? 10 : 0;
+        if (isNaN(val)) return sType === 'distance' ? DistanceConfig.maxRaw : 0;
 
         if (sType === 'distance') {
-            if (val > 10) val = 10;
+            if (val > DistanceConfig.maxRaw) val = DistanceConfig.maxRaw;
             if (val < 0) val = 0;
         }
         return val;
     };
+
+    // ================== MOTOR PORT -- MENIRU PERSIS WeDo2Motor RESMI ==================
+    // Dulu perintah motor dibangun manual inline (rumus scaling + array byte ad-hoc).
+    // Sekarang power & direction dipisah, mengikuti pola resmi scratch-vm, dan SEMUA
+    // byte perintah dibentuk lewat generateOutputCommand() -- bukan angka ajaib lagi.
+    // Ini penting karena hub dengan revisi firmware berbeda paling aman diperlakukan
+    // dengan format perintah yang sudah teruji luas (dipakai ribuan Scratch WeDo2 project).
+    class WeDo2MotorPort {
+        constructor (parentEngine, connectID) {
+            this._parent = parentEngine;
+            this._connectID = connectID; // 1 atau 2
+            this._direction = 1;
+            this._power = 0; // sudah diskalakan ke rentang 30-100 (lihat setter power)
+            this._lastSignedSpeed = null; // untuk hindari kirim ulang perintah yang sama persis
+        }
+
+        set direction (value) {
+            this._direction = value < 0 ? -1 : 1;
+        }
+
+        // value: kecepatan diminta 0-100 (magnitude). Formula IDENTIK dengan
+        // WeDo2Motor.power resmi: WeDo 2.0 hub cuma respons di rentang 30-100,
+        // jadi 0-100 dari UI dipetakan ulang ke 30-100 (0 tetap 0 = motor mati).
+        set power (value) {
+            const p = Math.max(0, Math.min(value, 100));
+            if (p === 0) {
+                this._power = 0;
+            } else {
+                const delta = 100 / p;
+                this._power = 30 + (70 / delta);
+            }
+        }
+
+        turnOn () {
+            if (this._power === 0) return;
+            const cmd = this._parent.generateOutputCommand(
+                this._connectID,
+                WeDo2Command.MOTOR_POWER,
+                [Math.round(this._power) * this._direction]
+            );
+            this._parent.send(BLECharacteristic.OUTPUT_COMMAND, cmd);
+        }
+
+        turnOff () {
+            const cmd = this._parent.generateOutputCommand(
+                this._connectID,
+                WeDo2Command.MOTOR_POWER,
+                [0]
+            );
+            this._parent.send(BLECharacteristic.OUTPUT_COMMAND, cmd);
+        }
+
+        // Dipanggil dari setMotor() global -- signedSpeed: -100..100 (tanda = arah)
+        setPower (signedSpeed) {
+            if (this._lastSignedSpeed === signedSpeed) return;
+            this._lastSignedSpeed = signedSpeed;
+
+            if (signedSpeed === 0) {
+                this.turnOff();
+                return;
+            }
+            this.direction = signedSpeed < 0 ? -1 : 1;
+            this.power = Math.abs(signedSpeed);
+            this.turnOn();
+        }
+
+        // Dipanggil saat mission stop/hub disconnect, supaya lain kali start lagi
+        // dengan kecepatan yang SAMA tetap terkirim (bukan disangka "tidak berubah").
+        resetState () {
+            this._lastSignedSpeed = null;
+        }
+    }
 
     class NativeWeDo2Engine {
         constructor (hubIndex) {
@@ -200,11 +376,17 @@
             this._ports = ['none', 'none'];
             this._motors = [null, null];
             this.sensorValues = { 1: 0, 2: 0 };
-            this.lastSentPower = { 1: null, 2: null };
             this.bleDevice = null;
             this.bleServer = null;
             this.chars = {};
             this.isReady = false;
+            this._lastTiltLogged = { 1: undefined, 2: undefined };
+            // Antrean supaya writeValue() ke hub ini SELALU berurutan -- BLE tidak
+            // izinkan 2 operasi GATT overlap; overlap adalah penyebab paling umum
+            // error "GATT operation failed" / NotSupportedError.
+            this._writeQueue = Promise.resolve();
+            this._rateLimiter = new RateLimiter(BLESendRateMax);
+            this._rateLimitWarned = false;
             this.runner = new ProgramRunner(this.id, this);
 
             AppState.robots.push({
@@ -233,6 +415,7 @@
                 AppState.robots = AppState.robots.filter(r => r.id !== this.id);
                 refreshEmptyState();
                 renderMissionUI();
+                refreshStatusDots();
                 this.bleServer = null;
             });
 
@@ -273,7 +456,7 @@
             await this.chars.inputValues.startNotifications();
             this.chars.inputValues.addEventListener('characteristicvaluechanged', (e) => this._onMessage(e.target.value));
 
-            setStatus(this.hubIndex, 'Terhubung & Aktif', '#00b894');
+            setStatus(this.hubIndex, 'Terhubung & Aktif', 'ok');
             const nameEl = document.getElementById('hubName-' + this.hubIndex);
             if (nameEl) nameEl.innerText = this.bleDevice.name || ('WeDo Hub ' + (this.hubIndex + 1));
             logMessage('Berhasil terhubung penuh ke: ' + (this.bleDevice.name || 'WeDo Hub'), 'packet');
@@ -281,27 +464,78 @@
             this.setLEDMode();
             this.setRGB(9, 132, 227);
             renderMissionUI();
+            refreshStatusDots();
+        }
+
+        // ================== GENERATOR PERINTAH -- PERSIS DARI SOURCE RESMI ==================
+        // Diambil apa adanya dari scratch-vm wedo2.js (generateOutputCommand /
+        // generateInputCommand). SEMUA perintah BLE (motor, LED, format sensor)
+        // WAJIB lewat dua fungsi ini -- tidak ada lagi array byte ad-hoc di tempat lain.
+        generateOutputCommand (connectID, commandID, values = null) {
+            let command = [connectID, commandID];
+            if (values) {
+                command = command.concat(values.length).concat(values);
+            }
+            return command;
+        }
+
+        generateInputCommand (connectID, type, mode, delta, units, enableNotifications) {
+            return [
+                1, // Command ID = 1 = "Sensor Format"
+                2, // Command Type = 2 = "Write"
+                connectID,
+                type,
+                mode,
+                delta,
+                0, // Delta Interval Byte 2
+                0, // Delta Interval Byte 3
+                0, // Delta Interval Byte 4
+                units,
+                enableNotifications ? 1 : 0
+            ];
         }
 
         setRGB (r, g, b) {
-            const cmd = [WeDo2ConnectID.LED, WeDo2Command.WRITE_RGB, 3, r, g, b];
+            const cmd = this.generateOutputCommand(WeDo2ConnectID.LED, WeDo2Command.WRITE_RGB, [r, g, b]);
             this.send(BLECharacteristic.OUTPUT_COMMAND, cmd);
         }
 
         setLEDMode () {
-            const cmd = [1, 2, WeDo2ConnectID.LED, WeDo2Device.LED, WeDo2Mode.LED, 0, 0, 0, 0, WeDo2Unit.LED, 0];
+            const cmd = this.generateInputCommand(WeDo2ConnectID.LED, WeDo2Device.LED, WeDo2Mode.LED, 0, WeDo2Unit.LED, false);
             this.send(BLECharacteristic.INPUT_COMMAND, cmd);
         }
 
         send (uuid, message) {
             if (!this.bleServer) return Promise.resolve();
-            const dataArray = new Uint8Array(message);
-            if (uuid === BLECharacteristic.INPUT_COMMAND && this.chars.inputCommand) {
-                return this.chars.inputCommand.writeValue(dataArray);
-            } else if (uuid === BLECharacteristic.OUTPUT_COMMAND && this.chars.outputCommand) {
-                return this.chars.outputCommand.writeValue(dataArray);
+
+            if (!this._rateLimiter.okayToSend()) {
+                // Persis perilaku resmi: kalau melebihi BLESendRateMax/detik, perintah
+                // ini DILEWATI (bukan diantre menumpuk) supaya hub tidak kebanjiran.
+                if (!this._rateLimitWarned) {
+                    logMessage('Hub ' + (this.hubIndex + 1) + ': laju perintah dibatasi (>' + BLESendRateMax + '/detik), sebagian perintah dilewati sementara.', 'warn');
+                    this._rateLimitWarned = true;
+                }
+                return Promise.resolve();
             }
-            return Promise.resolve();
+            this._rateLimitWarned = false;
+
+            const dataArray = new Uint8Array(message);
+            const doWrite = () => {
+                if (uuid === BLECharacteristic.INPUT_COMMAND && this.chars.inputCommand) {
+                    return this.chars.inputCommand.writeValue(dataArray);
+                } else if (uuid === BLECharacteristic.OUTPUT_COMMAND && this.chars.outputCommand) {
+                    return this.chars.outputCommand.writeValue(dataArray);
+                }
+                return Promise.resolve();
+            };
+            // Rantai ke antrean yang sama: writeValue baru BARU dikirim setelah
+            // writeValue sebelumnya benar-benar selesai (berhasil ATAU gagal).
+            // Ini mencegah 2 operasi GATT berjalan bersamaan di hub yang sama.
+            const next = this._writeQueue.then(doWrite, doWrite).catch(err => {
+                logMessage('Hub ' + (this.hubIndex + 1) + ': perintah BLE gagal (' + (err && err.message ? err.message : err) + ')', 'warn');
+            });
+            this._writeQueue = next;
+            return next;
         }
 
         _onMessage (dataView) {
@@ -309,56 +543,72 @@
             if (data.length >= 4 && (data[0] === 1 || data[0] === 2)) {
                 const connectID = data[0];
                 if (data[1] === 0) {
-                    this._clearPort(connectID);
+                    this._clearPort(connectID); // sudah renderMissionUI() sendiri di dalamnya
                 } else {
-                    this._registerSensorOrMotor(connectID, data[3]);
+                    this._registerSensorOrMotor(connectID, data[3]); // sudah renderMissionUI() sendiri di dalamnya
                 }
-            } else {
-                const connectID = data[1];
-                const type = this._ports[connectID - 1];
-                const valEl = document.getElementById('port' + connectID + 'Val-' + this.hubIndex);
-                
-                if (type === WeDo2Device.DISTANCE) {
-                    this.sensorValues[connectID] = data[2];
-                    if (valEl) valEl.innerText = data[2];
-                } else if (type === WeDo2Device.TILT) {
-                    // Menerima data byte mentah 0-255 untuk sumbu X (data[2]) dan Y (data[3] jika tersedia)
-                    const rawX = data[2];
-                    const rawY = data.length > 3 ? data[3] : 128;
-                    const filteredTilt = snapTiltValue(rawX, rawY);
-                    
-                    this.sensorValues[connectID] = filteredTilt;
-                    if (valEl) valEl.innerText = filteredTilt;
-                }
+                return;
             }
-            renderMissionUI();
+
+            // Update NILAI sensor biasa -- JANGAN render ulang mission builder di sini.
+            // Dulu renderMissionUI() (rebuild HTML dropdown lengkap) dipanggil di SETIAP
+            // notifikasi, termasuk update angka sensor yang bisa masuk puluhan kali/detik.
+            // Itu bikin main thread sibuk, writeValue() jadi telat terkirim/dibalas, dan
+            // pada sebagian hub clone memicu firmware-nya beep terus sebagai indikasi
+            // komunikasi tidak lancar. Update nilai cukup langsung ke elemen DOM span-nya.
+            const connectID = data[1];
+            const type = this._ports[connectID - 1];
+            const valEl = document.getElementById('port' + connectID + 'Val-' + this.hubIndex);
+
+            if (type === WeDo2Device.DISTANCE) {
+                const rawDist = data[2];
+                if (rawDist > DistanceConfig.maxRaw && !this._distanceCalibWarned) {
+                    logMessage('Hub ' + (this.hubIndex + 1) + ' Port ' + connectID +
+                        ': nilai jarak mentah (' + rawDist + ') melebihi DistanceConfig.maxRaw (' + DistanceConfig.maxRaw +
+                        '). Pertimbangkan naikkan DistanceConfig.maxRaw supaya threshold dropdown tetap akurat.', 'warn');
+                    this._distanceCalibWarned = true;
+                }
+                this.sensorValues[connectID] = rawDist;
+                if (valEl) valEl.innerText = rawDist;
+            } else if (type === WeDo2Device.TILT) {
+                const rawX = data[2];
+                // Fallback aman 0 (netral) kalau hub cuma kirim 1 byte, BUKAN 128 seperti versi lama
+                // (128 di skema unwrap-signed berarti sudut ~ -128, jauh dari netral -> salah).
+                const rawY = data.length > 3 ? data[3] : 0;
+                const filteredTilt = snapTiltValue(rawX, rawY);
+
+                // Log kalibrasi: hanya saat nilai BERUBAH, supaya tidak membanjiri log,
+                // tapi cukup untuk verifikasi arah fisik saat tes hardware.
+                if (this._lastTiltLogged[connectID] !== filteredTilt) {
+                    const angleX = unwrapSignedByte(rawX);
+                    const angleY = unwrapSignedByte(rawY);
+                    logMessage('Hub ' + (this.hubIndex + 1) + ' Port ' + connectID +
+                        ' Tilt raw(' + rawX + ',' + rawY + ') sudut(' + angleX + '°,' + angleY + '°) → kode ' + filteredTilt, 'packet');
+                    this._lastTiltLogged[connectID] = filteredTilt;
+                }
+
+                this.sensorValues[connectID] = filteredTilt;
+                if (valEl) valEl.innerText = filteredTilt;
+            }
         }
 
         _registerSensorOrMotor (connectID, type) {
             this._ports[connectID - 1] = type;
+            this._motorWarnLogged = false;
             let typeName = 'TypeID (' + type + ')';
             const robotObj = AppState.robots.find(r => r.id === this.id);
             if (robotObj) robotObj.portMap[connectID] = type;
 
             if (type === WeDo2Device.MOTOR) {
                 typeName = 'DC Motor';
-                this._motors[connectID - 1] = {
-                    setPower: (p) => {
-                        if (this.lastSentPower[connectID] === p) return;
-                        this.lastSentPower[connectID] = p;
-
-                        const scaled = p === 0 ? 0 : Math.round(30 + (70 / (100 / Math.abs(p)))) * (p < 0 ? -1 : 1);
-                        const cmd = [connectID, WeDo2Command.MOTOR_POWER, 1, scaled];
-                        this.send(BLECharacteristic.OUTPUT_COMMAND, cmd).catch(err => {});
-                    }
-                };
+                this._motors[connectID - 1] = new WeDo2MotorPort(this, connectID);
             } else if (type === WeDo2Device.DISTANCE) {
-                typeName = 'Distance Sensor';
-                const cmd = [1, 2, connectID, type, WeDo2Mode.DISTANCE, 1, 0, 0, 0, WeDo2Unit.DISTANCE, 1];
+                typeName = 'Distance';
+                const cmd = this.generateInputCommand(connectID, type, WeDo2Mode.DISTANCE, 1, WeDo2Unit.DISTANCE, true);
                 this.send(BLECharacteristic.INPUT_COMMAND, cmd);
             } else if (type === WeDo2Device.TILT) {
-                typeName = 'Tilt Sensor';
-                const cmd = [1, 2, connectID, type, WeDo2Mode.TILT, 1, 0, 0, 0, WeDo2Unit.TILT, 1];
+                typeName = 'Tilt';
+                const cmd = this.generateInputCommand(connectID, type, WeDo2Mode.TILT, 1, WeDo2Unit.TILT, true);
                 this.send(BLECharacteristic.INPUT_COMMAND, cmd);
             }
 
@@ -370,7 +620,6 @@
         _clearPort (connectID) {
             this._ports[connectID - 1] = 'none';
             this._motors[connectID - 1] = null;
-            this.lastSentPower[connectID] = null;
             const robotObj = AppState.robots.find(r => r.id === this.id);
             if (robotObj) robotObj.portMap[connectID] = 0;
             const typeEl = document.getElementById('port' + connectID + 'Type-' + this.hubIndex);
@@ -383,8 +632,16 @@
 
     window.setMotor = function(hubId, portNum, speed) {
         const eng = engines.find(e => e && e.id === hubId);
-        if (eng && eng._motors[portNum - 1]) {
+        if (!eng) return;
+        if (eng._motors[portNum - 1]) {
             eng._motors[portNum - 1].setPower(speed);
+        } else if (speed !== 0 && !eng._motorWarnLogged) {
+            // Dulu gagal diam-diam tanpa jejak apa pun -- sekarang dilaporkan sekali
+            // supaya kelihatan kalau port yang dipilih di mission builder ternyata
+            // BUKAN port yang ada motornya (misal masih default Port A padahal
+            // sensor terpasang di situ, motor sebenarnya di Port B).
+            logMessage('⚠️ Hub ' + (eng.hubIndex + 1) + ' Port ' + portNum + ': tidak ada motor terdaftar di port ini. Cek lagi pilihan port di langkah misi.', 'warn');
+            eng._motorWarnLogged = true;
         }
     };
 
@@ -403,44 +660,59 @@
         }
     };
 
+    // ================== STATUS DOT RINGKAS (STICKY, OVERVIEW 4 HUB) ==================
+    window.refreshStatusDots = function() {
+        const el = document.getElementById('globalStatusDots');
+        if (!el) return;
+        let html = '';
+        for (let i = 0; i < engines.length; i++) {
+            const eng = engines[i];
+            if (!eng) continue;
+            let cls = 'status-dot';
+            if (eng.runner && eng.runner.isRunning) cls += ' running';
+            else if (eng.bleServer) cls += ' connected';
+            html += '<span class="' + cls + '" style="--dot-color:' + HUB_COLORS[i % HUB_COLORS.length] + ';" title="Hub ' + (i + 1) + '"></span>';
+        }
+        el.innerHTML = html || '<span class="status-dots-empty">Belum ada hub</span>';
+    };
+
+    // ================== KARTU HUB (RINGKAS, EFISIEN RUANG) ==================
     function hubCardHtml (idx) {
+        const accent = HUB_COLORS[idx % HUB_COLORS.length];
         return '' +
-        '<div class="card" id="hubCard-' + idx + '">' +
-            '<div style="display:flex; justify-content:space-between; align-items:center;">' +
-                '<h2 id="hubName-' + idx + '" style="border:none; padding:0; margin:0;">WeDo Hub ' + (idx + 1) + '</h2>' +
-                '<div style="display:flex; gap:6px;">' +
-                    '<button class="btn-green" id="readyBtn-' + idx + '" style="padding:4px 8px; font-size:10px;" onclick="toggleReady(' + idx + ')">SET READY</button>' +
-                    '<button class="btn-red" style="padding:4px 10px; font-size:11px;" onclick="disconnectHub(' + idx + ')">Putus</button>' +
+        '<div class="hub-card" id="hubCard-' + idx + '" style="border-left-color:' + accent + ';">' +
+            '<div class="card-head">' +
+                '<h2 class="hub-name" id="hubName-' + idx + '" style="color:' + accent + ';">WeDo Hub ' + (idx + 1) + '</h2>' +
+                '<div class="head-btns">' +
+                    '<button class="btn-green" id="readyBtn-' + idx + '" onclick="toggleReady(' + idx + ')">READY</button>' +
+                    '<button class="btn-red" onclick="disconnectHub(' + idx + ')">Putus</button>' +
                 '</div>' +
             '</div>' +
-            '<p style="font-size:12px; margin:6px 0;">Status: <span id="statusText-' + idx + '" class="status-val" style="color:#0984e3;">Menyambung…</span> | <span id="status-hub_' + idx + '" style="font-weight:bold; color:#d35400;">STATUS: IDLE</span></p>' +
-            '<div id="stateIndicator-hub_' + idx + '" style="font-size:11px; font-weight:bold; color:#2980b9; background:#ebf5fb; padding:4px 8px; border-radius:6px; margin-bottom:6px; display:none;">📍 STATE AKTIF: [ 1 ]</div>' +
-            
-            '<div class="ports-grid">' +
-                portBoxHtml(idx, 1) +
-                portBoxHtml(idx, 2) +
+            '<div class="status-badge-row">' +
+                '<span class="status-badge ok" id="statusText-' + idx + '">Menyambung…</span>' +
+                '<span class="status-badge" id="status-hub_' + idx + '">IDLE</span>' +
             '</div>' +
+            '<div id="stateIndicator-hub_' + idx + '" class="state-flag">📍 STATE AKTIF: [ 1 ]</div>' +
 
-            '<div class="button-row" style="margin-top:10px;">' +
-                '<button class="btn-green" onclick="engines[' + idx + '].runner.start()">▶ START MISI</button>' +
-                '<button class="btn-red" onclick="engines[' + idx + '].runner.stop()">⏹ STOP MISI</button>' +
+            portRowHtml(idx, 1) +
+            portRowHtml(idx, 2) +
+
+            '<div class="button-row">' +
+                '<button class="btn-green" onclick="engines[' + idx + '].runner.start()">▶ START</button>' +
+                '<button class="btn-red" onclick="engines[' + idx + '].runner.stop()">⏹ STOP</button>' +
             '</div>' +
         '</div>';
     }
 
-    function portBoxHtml (idx, portNum) {
+    function portRowHtml (idx, portNum) {
         return '' +
-        '<div class="sensor-box">' +
-            '<div style="display:flex; justify-content:space-between; align-items:center;">' +
-                '<strong>Port ' + portNum + ':</strong>' +
-                '<span id="port' + portNum + 'Type-' + idx + '" style="color:#0984e3; font-weight:bold; font-size:11px;">Kosong</span>' +
-            '</div>' +
-            '<div style="margin-top: 4px; font-size:11px;">Nilai: <span id="port' + portNum + 'Val-' + idx + '" style="color: #00b894; font-weight:900;">0</span></div>' +
-            '<div class="button-row">' +
-                '<button class="btn-green" onclick="directDriveManual(' + idx + ',' + portNum + ',100)">Maju</button>' +
-                '<button class="btn-green" onclick="directDriveManual(' + idx + ',' + portNum + ',-100)">Mundur</button>' +
-                '<button class="btn-red" onclick="directDriveManual(' + idx + ',' + portNum + ',0)">Stop</button>' +
-            '</div>' +
+        '<div class="port-row">' +
+            '<span class="port-label">P' + portNum + '</span>' +
+            '<span class="port-type" id="port' + portNum + 'Type-' + idx + '">Kosong</span>' +
+            '<span class="port-val" id="port' + portNum + 'Val-' + idx + '">0</span>' +
+            '<button class="btn-green mini-btn" onclick="directDriveManual(' + idx + ',' + portNum + ',100)">▲</button>' +
+            '<button class="btn-green mini-btn" onclick="directDriveManual(' + idx + ',' + portNum + ',-100)">▼</button>' +
+            '<button class="btn-red mini-btn" onclick="directDriveManual(' + idx + ',' + portNum + ',0)">■</button>' +
         '</div>';
     }
 
@@ -452,7 +724,7 @@
         if (robotObj) robotObj.isReady = eng.isReady;
         var btn = document.getElementById('readyBtn-' + idx);
         if (btn) {
-            btn.innerText = eng.isReady ? 'READY 🟢' : 'SET READY';
+            btn.innerText = eng.isReady ? 'READY 🟢' : 'READY';
             btn.style.background = eng.isReady ? '#00b894' : '#0984e3';
         }
     };
@@ -469,6 +741,7 @@
             }
         });
         renderMissionUI();
+        refreshStatusDots();
     };
 
     window.stopAllMissions = async function() {
@@ -477,18 +750,27 @@
             if (eng) eng.runner.stop();
         });
         renderMissionUI();
+        refreshStatusDots();
     };
 
     function directDriveManual(hubIdx, portNum, speed) {
         setMotor('hub_' + hubIdx, portNum, speed);
     }
 
-    function setStatus (idx, text, color) {
+    function setStatus (idx, text, variant) {
         const el = document.getElementById('statusText-' + idx);
-        if (el) { el.innerText = text; el.style.color = color; }
+        if (el) {
+            el.innerText = text;
+            el.className = 'status-badge' + (variant === 'ok' ? ' ok' : '');
+        }
     }
 
     document.getElementById('btnConnect').addEventListener('click', async () => {
+        if (engines.filter(e => e).length >= MAX_HUBS) {
+            logMessage('Maksimal ' + MAX_HUBS + ' hub sudah terhubung.', 'warn');
+            return;
+        }
+
         const emptyState = document.getElementById('emptyState');
         if (emptyState) emptyState.remove();
 
@@ -506,6 +788,7 @@
             const card = document.getElementById('hubCard-' + idx);
             if (card) card.remove();
             refreshEmptyState();
+            refreshStatusDots();
         }
     });
 
@@ -520,18 +803,16 @@
     function refreshEmptyState () {
         const container = document.getElementById('hubsContainer');
         if (container.children.length === 0 && !document.getElementById('emptyState')) {
-            container.insertAdjacentHTML('beforeend', '<div class="empty-state" id="emptyState">Belum ada hub. Klik "+ Hubungkan Hub" untuk mulai.</div>');
+            container.insertAdjacentHTML('beforeend', '<div class="empty-state" id="emptyState">Belum ada hub. Klik "+ Hubungkan Hub" untuk mulai (maks. 4 hub).</div>');
         }
     }
 
     function getPortOptions(selected, filterType = null) {
         var ports = [
             { id: 'A', name: 'Port A', num: 1 },
-            { id: 'B', name: 'Port B', num: 2 },
-            { id: 'C', name: 'Port C (Hub 2)', num: 1 },
-            { id: 'D', name: 'Port D (Hub 2)', num: 2 }
+            { id: 'B', name: 'Port B', num: 2 }
         ];
-        
+
         var html = '';
         for (var i = 0; i < ports.length; i++) {
             var p = ports[i];
@@ -563,7 +844,7 @@
 
     function getIrSelectorOptions(sel) {
         var opts = '';
-        for (var i = 0; i <= 100; i+=10) {
+        for (var i = 0; i <= DistanceConfig.maxRaw; i += DistanceConfig.step) {
             opts += '<option value="' + i + '" ' + (sel === i ? 'selected' : '') + '>Jarak: ' + i + '</option>';
         }
         return opts;
@@ -600,14 +881,12 @@
                 }
             }
         }
-        return 'none'; 
+        return 'none';
     };
 
     function resolveHardwarePort(ent, portChar) {
-        var isHub2 = (portChar === 'C' || portChar === 'D');
-        var hubId = isHub2 ? ent.hub2 : ent.hub1;
-        var physPort = (portChar === 'A' || portChar === 'C') ? 1 : 2;
-        return { hubId: hubId, port: physPort };
+        var physPort = (portChar === 'A') ? 1 : 2;
+        return { hubId: ent.hub1, port: physPort };
     }
 
     window.renderMissionUI = function() {
@@ -641,15 +920,15 @@
     window.refreshGlobalRows = function() {
         var container = document.getElementById('mission-rows-container');
         if (!container) return;
-        
+
         var genHtml = '';
 
         if (GlobalMission.type === 'm1') {
-            var row = GlobalMission.rows[0];
+            var m1row = GlobalMission.m1Row;
             genHtml += '<div style="background:white; border:1px solid #bdc3c7; padding:10px; border-radius:8px;">';
             genHtml += '<div style="font-size:11px; font-weight:bold; margin-bottom:8px;">STATUS MOTOR LANGSUNG:</div>';
-            for (var a = 0; a < row.actions.length; a++) {
-                var act = row.actions[a];
+            for (var a = 0; a < m1row.actions.length; a++) {
+                var act = m1row.actions[a];
                 genHtml += '<div style="display:flex; gap:6px; align-items:center; margin-bottom:6px; padding:6px; background:#f9f9f9; border-radius:6px;">';
                 genHtml += '<select onchange="updateActionVal(\'m1\', 0, ' + a + ', \'port\', this.value)">' + getPortOptions(act.port, 'motor') + '</select>';
                 genHtml += '<select onchange="updateActionVal(\'m1\', 0, ' + a + ', \'direction\', parseInt(this.value))"><option value="1" ' + (act.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (act.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (act.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
@@ -665,13 +944,13 @@
             genHtml += '<input type="checkbox" ' + (GlobalMission.m2Loop ? 'checked' : '') + ' onchange="GlobalMission.m2Loop = this.checked"> Ulangi Terus (Looping)';
             genHtml += '</label></div>';
 
-            for (var gr = 0; gr < GlobalMission.rows.length; gr++) {
-                var gRow = GlobalMission.rows[gr];
+            for (var gr = 0; gr < GlobalMission.m2Rows.length; gr++) {
+                var gRow = GlobalMission.m2Rows[gr];
                 genHtml += '<div style="background:white; border:1px solid #bdc3c7; padding:8px; margin-bottom:8px; border-radius:8px;">';
                 genHtml += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">';
                 genHtml += '<div style="font-size:11px; font-weight:bold;">LANGKAH ' + (gr + 1) + ' | Waktu: <input type="number" value="' + gRow.time + '" style="width:35px; font-size:10px;" oninput="updateActionVal(\'m2_time\', \'' + gr + '\', null, \'time\', parseFloat(this.value))"> s</div>';
                 genHtml += '<button onclick="removeGlobalRow(' + gr + ')" style="background:none; border:none; color:red; font-size:10px; cursor:pointer;">🗑️ HAPUS</button></div>';
-                
+
                 for (var ga = 0; ga < gRow.actions.length; ga++) {
                     var gAct = gRow.actions[ga];
                     genHtml += '<div style="display:flex; gap:5px; align-items:center; margin-bottom:4px; padding:4px; background:#fdfdfd; border-radius:5px; border:1px solid #eee;">';
@@ -696,33 +975,33 @@
             }
             genHtml += '<button style="font-size:9px; padding:4px 10px; background:white; border:1px solid #1abc9c; color:#16a085; border-radius:5px; font-weight:bold;" onclick="addDefaultAction()">+ TAMBAH MOTOR</button></div>';
 
-            for (var r = 0; r < GlobalMission.rows.length; r++) {
-                var row = GlobalMission.rows[r];
+            for (var r = 0; r < GlobalMission.m3Rows.length; r++) {
+                var row = GlobalMission.m3Rows[r];
                 var detectedType = getAutoSensorType(row.sensorPort);
                 row.sensorType = detectedType;
                 var vDrop = (detectedType === 'tilt') ? getTiltSelectorOptions(row.threshold) : getIrSelectorOptions(row.threshold);
-                
+
                 genHtml += '<div style="background:#fffafa; border:2px solid #e74c3c; border-radius:10px; padding:10px; margin-bottom:10px;">';
                 genHtml += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">';
                 genHtml += '<div style="display:flex; gap:6px; align-items:center; font-size:11px;"><strong style="color:#c0392b;">⚡ JIKA:</strong>';
-                genHtml += '<select onchange="GlobalMission.rows[' + r + '].sensorPort=this.value; GlobalMission.rows[' + r + '].sensorType=getAutoSensorType(this.value); GlobalMission.rows[' + r + '].threshold = (GlobalMission.rows[' + r + '].sensorType === \'tilt\' ? 0 : 5); refreshGlobalRows();" style="font-size:10px;">' + getPortOptions(row.sensorPort, 'sensor') + '</select>';
+                genHtml += '<select onchange="GlobalMission.m3Rows[' + r + '].sensorPort=this.value; GlobalMission.m3Rows[' + r + '].sensorType=getAutoSensorType(this.value); GlobalMission.m3Rows[' + r + '].threshold = (GlobalMission.m3Rows[' + r + '].sensorType === \'tilt\' ? 0 : 5); refreshGlobalRows();" style="font-size:10px;">' + getPortOptions(row.sensorPort, 'sensor') + '</select>';
                 genHtml += '<span style="background:#fadbd8; color:#900c3f; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:bold;">🔍 ' + detectedType.toUpperCase() + ' (Auto)</span>';
-                genHtml += '<select onchange="GlobalMission.rows[' + r + '].operator=this.value;" style="font-size:10px;"><option value="<" ' + (row.operator === '<' ? 'selected' : '') + '> < </option><option value="==" ' + (row.operator === '==' ? 'selected' : '') + '> = </option><option value=">" ' + (row.operator === '>' ? 'selected' : '') + '> > </option></select>';
-                genHtml += '<select onchange="GlobalMission.rows[' + r + '].threshold=parseInt(this.value);" style="font-size:10px;">' + vDrop + '</select></div>';
+                genHtml += '<select onchange="GlobalMission.m3Rows[' + r + '].operator=this.value;" style="font-size:10px;"><option value="<" ' + (row.operator === '<' ? 'selected' : '') + '> < </option><option value="==" ' + (row.operator === '==' ? 'selected' : '') + '> = </option><option value=">" ' + (row.operator === '>' ? 'selected' : '') + '> > </option></select>';
+                genHtml += '<select onchange="GlobalMission.m3Rows[' + r + '].threshold=parseInt(this.value);" style="font-size:10px;">' + vDrop + '</select></div>';
                 genHtml += '<button onclick="removeGlobalRow(' + r + ')" style="background:none; border:none; color:#e74c3c; font-weight:bold; cursor:pointer;">HAPUS</button></div>';
-                
+
                 for (var s = 0; s < row.steps.length; s++) {
                     var step = row.steps[s];
                     genHtml += '<div style="background:#fff; padding:8px; border-radius:8px; border:1px solid #ddd; margin-bottom:8px;">';
                     genHtml += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><span style="font-size:10px; font-weight:bold;">LANGKAH ' + (s + 1) + ':</span>';
                     genHtml += '<div style="font-size:10px;">⏱️ <input type="number" step="0.5" value="' + step.time + '" style="width:35px;" oninput="updateActionVal(\'m3_time\', \'' + r + '\', null, \'time\', parseFloat(this.value), ' + s + ')"> s <span onclick="removeStepFromRow(' + r + ',' + s + ')" style="cursor:pointer; color:red;">🗑️</span></div></div>';
-                    
-                    for (var a = 0; a < step.actions.length; a++) {
-                        var sAct = step.actions[a];
+
+                    for (var a2 = 0; a2 < step.actions.length; a2++) {
+                        var sAct = step.actions[a2];
                         genHtml += '<div style="display:flex; gap:5px; align-items:center; margin-bottom:4px; padding:4px; background:#f9f9f9; border-radius:5px;">';
-                        genHtml += '<select onchange="updateActionVal(\'m3_seq\', \'' + r + '\', ' + a + ', \'port\', this.value, ' + s + ')" style="font-size:10px;">' + getPortOptions(sAct.port, 'motor') + '</select>';
-                        genHtml += '<select onchange="updateActionVal(\'m3_seq\', \'' + r + '\', ' + a + ', \'direction\', parseInt(this.value), ' + s + ')" style="font-size:10px;"><option value="1" ' + (sAct.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (sAct.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (sAct.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
-                        genHtml += '<input type="number" value="' + sAct.speed + '" style="width:35px; font-size:10px;" oninput="updateActionVal(\'m3_seq\', \'' + r + '\', ' + a + ', \'speed\', parseInt(this.value), ' + s + ')"><span onclick="removeActionFromStep(' + r + ',' + s + ',' + a + ')" style="cursor:pointer; color:red; margin-left:auto;">×</span></div>';
+                        genHtml += '<select onchange="updateActionVal(\'m3_seq\', \'' + r + '\', ' + a2 + ', \'port\', this.value, ' + s + ')" style="font-size:10px;">' + getPortOptions(sAct.port, 'motor') + '</select>';
+                        genHtml += '<select onchange="updateActionVal(\'m3_seq\', \'' + r + '\', ' + a2 + ', \'direction\', parseInt(this.value), ' + s + ')" style="font-size:10px;"><option value="1" ' + (sAct.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (sAct.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (sAct.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
+                        genHtml += '<input type="number" value="' + sAct.speed + '" style="width:35px; font-size:10px;" oninput="updateActionVal(\'m3_seq\', \'' + r + '\', ' + a2 + ', \'speed\', parseInt(this.value), ' + s + ')"><span onclick="removeActionFromStep(' + r + ',' + s + ',' + a2 + ')" style="cursor:pointer; color:red; margin-left:auto;">×</span></div>';
                     }
                     genHtml += '<button style="font-size:9px; padding:3px 8px; background:#f4f6f7; border:1px solid #ccc; border-radius:4px;" onclick="addActionToStep(' + r + ',' + s + ')">+ MOTOR</button></div>';
                 }
@@ -731,30 +1010,30 @@
             genHtml += '<button class="btn btn-danger" style="width:100%; padding:12px; font-weight:bold; font-size:12px;" onclick="addGlobalRow()">➕ TAMBAH PEMICU REAKSI BARU</button>';
         }
         else if (GlobalMission.type === 'm4') {
-            for (var r = 0; r < GlobalMission.rows.length; r++) {
-                var row = GlobalMission.rows[r];
-                var detectedType = getAutoSensorType(row.sensorPort);
-                row.sensorType = detectedType;
-                var vDrop = (detectedType === 'tilt') ? getTiltSelectorOptions(row.threshold) : getIrSelectorOptions(row.threshold);
+            for (var r2 = 0; r2 < GlobalMission.m4Rows.length; r2++) {
+                var row4 = GlobalMission.m4Rows[r2];
+                var detectedType4 = getAutoSensorType(row4.sensorPort);
+                row4.sensorType = detectedType4;
+                var vDrop4 = (detectedType4 === 'tilt') ? getTiltSelectorOptions(row4.threshold) : getIrSelectorOptions(row4.threshold);
 
                 genHtml += '<div style="background:#fef9e7; border:2px solid #f1c40f; border-radius:10px; padding:10px; margin-bottom:10px;">';
                 genHtml += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">';
                 genHtml += '<div style="display:flex; gap:6px; align-items:center; font-size:11px;"><strong style="color:#d4ac0d;">📐 JIKA SENSOR:</strong>';
-                genHtml += '<select onchange="GlobalMission.rows[' + r + '].sensorPort=this.value; GlobalMission.rows[' + r + '].sensorType=getAutoSensorType(this.value); GlobalMission.rows[' + r + '].threshold = (GlobalMission.rows[' + r + '].sensorType === \'tilt\' ? 0 : 5); refreshGlobalRows();" style="font-size:10px;">' + getPortOptions(row.sensorPort, 'sensor') + '</select>';
-                genHtml += '<span style="background:#fcf3cf; color:#7d6608; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:bold;">🔍 ' + detectedType.toUpperCase() + ' (Auto)</span>';
-                genHtml += '<select onchange="GlobalMission.rows[' + r + '].operator=this.value;" style="font-size:10px;"><option value="<" ' + (row.operator === '<' ? 'selected' : '') + '> < </option><option value="==" ' + (row.operator === '==' ? 'selected' : '') + '> = </option><option value=">" ' + (row.operator === '>' ? 'selected' : '') + '> > </option></select>';
-                genHtml += '<select onchange="GlobalMission.rows[' + r + '].threshold=parseInt(this.value);" style="font-size:10px;">' + vDrop + '</select></div>';
-                genHtml += '<button onclick="removeGlobalRow(' + r + ')" style="background:none; border:none; color:#c0392b; font-weight:bold; cursor:pointer;">HAPUS</button></div>';
+                genHtml += '<select onchange="GlobalMission.m4Rows[' + r2 + '].sensorPort=this.value; GlobalMission.m4Rows[' + r2 + '].sensorType=getAutoSensorType(this.value); GlobalMission.m4Rows[' + r2 + '].threshold = (GlobalMission.m4Rows[' + r2 + '].sensorType === \'tilt\' ? 0 : 5); refreshGlobalRows();" style="font-size:10px;">' + getPortOptions(row4.sensorPort, 'sensor') + '</select>';
+                genHtml += '<span style="background:#fcf3cf; color:#7d6608; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:bold;">🔍 ' + detectedType4.toUpperCase() + ' (Auto)</span>';
+                genHtml += '<select onchange="GlobalMission.m4Rows[' + r2 + '].operator=this.value;" style="font-size:10px;"><option value="<" ' + (row4.operator === '<' ? 'selected' : '') + '> < </option><option value="==" ' + (row4.operator === '==' ? 'selected' : '') + '> = </option><option value=">" ' + (row4.operator === '>' ? 'selected' : '') + '> > </option></select>';
+                genHtml += '<select onchange="GlobalMission.m4Rows[' + r2 + '].threshold=parseInt(this.value);" style="font-size:10px;">' + vDrop4 + '</select></div>';
+                genHtml += '<button onclick="removeGlobalRow(' + r2 + ')" style="background:none; border:none; color:#c0392b; font-weight:bold; cursor:pointer;">HAPUS</button></div>';
 
                 genHtml += '<div style="font-size:10px; font-weight:bold; margin-bottom:5px; color:#555;">KUNCI AKSI PERMANEN (LATCH - ANTI JITTER):</div>';
-                for (var a = 0; a < row.actions.length; a++) {
-                    var act = row.actions[a];
+                for (var a3 = 0; a3 < row4.actions.length; a3++) {
+                    var act4 = row4.actions[a3];
                     genHtml += '<div style="display:flex; gap:5px; align-items:center; margin-bottom:4px; padding:4px; background:#fff; border-radius:5px; border:1px solid #f7dc6f;">';
-                    genHtml += '<select onchange="updateActionVal(\'m4_act\', \'' + r + '\', ' + a + ', \'port\', this.value)" style="font-size:10px;">' + getPortOptions(act.port, 'motor') + '</select>';
-                    genHtml += '<select onchange="updateActionVal(\'m4_act\', \'' + r + '\', ' + a + ', \'direction\', parseInt(this.value))" style="font-size:10px;"><option value="1" ' + (act.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (act.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (act.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
-                    genHtml += '<input type="number" value="' + act.speed + '" style="width:35px; font-size:10px;" oninput="updateActionVal(\'m4_act\', \'' + r + '\', ' + a + ', \'speed\', parseInt(this.value))"><span onclick="removeActionFromRow(' + r + ',' + a + ')" style="cursor:pointer; color:red; margin-left:auto;">×</span></div>';
+                    genHtml += '<select onchange="updateActionVal(\'m4_act\', \'' + r2 + '\', ' + a3 + ', \'port\', this.value)" style="font-size:10px;">' + getPortOptions(act4.port, 'motor') + '</select>';
+                    genHtml += '<select onchange="updateActionVal(\'m4_act\', \'' + r2 + '\', ' + a3 + ', \'direction\', parseInt(this.value))" style="font-size:10px;"><option value="1" ' + (act4.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (act4.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (act4.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
+                    genHtml += '<input type="number" value="' + act4.speed + '" style="width:35px; font-size:10px;" oninput="updateActionVal(\'m4_act\', \'' + r2 + '\', ' + a3 + ', \'speed\', parseInt(this.value))"><span onclick="removeActionFromRow(' + r2 + ',' + a3 + ')" style="cursor:pointer; color:red; margin-left:auto;">×</span></div>';
                 }
-                genHtml += '<button style="font-size:9px; padding:4px 8px; background:white; border:1px solid #f1c40f; border-radius:4px;" onclick="addActionToRow(' + r + ')">+ TAMBAH MOTOR KUNCI</button></div>';
+                genHtml += '<button style="font-size:9px; padding:4px 8px; background:white; border:1px solid #f1c40f; border-radius:4px;" onclick="addActionToRow(' + r2 + ')">+ TAMBAH MOTOR KUNCI</button></div>';
             }
             genHtml += '<button class="btn btn-warning" style="width:100%; padding:10px; font-weight:bold; font-size:12px; color:white;" onclick="addGlobalRow()">➕ TAMBAH KONDISI LATCH BARU</button>';
         }
@@ -771,30 +1050,40 @@
             genHtml += '<select onchange="GlobalMission.m5TriggerVal=parseInt(this.value);">' + vDropM5 + '</select></div></div>';
 
             var targetData = GlobalMission.states;
-            for (var gr = 0; gr < targetData.length; gr++) {
-                var gRow = targetData[gr];
+            for (var gr2 = 0; gr2 < targetData.length; gr2++) {
+                var gRow2 = targetData[gr2];
                 genHtml += '<div style="background:white; border:1px solid #bdc3c7; padding:8px; margin-bottom:8px; border-radius:8px;">';
                 genHtml += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">';
-                genHtml += '<div style="font-size:11px; font-weight:bold;">STATE ' + (gr + 1) + '</div>';
-                genHtml += '<button onclick="removeState(' + gr + ')" style="background:none; border:none; color:red; font-size:10px; cursor:pointer;">🗑️ HAPUS</button></div>';
-                
-                for (var ga = 0; ga < gRow.actions.length; ga++) {
-                    var gAct = gRow.actions[ga];
+                genHtml += '<div style="font-size:11px; font-weight:bold;">STATE ' + (gr2 + 1) + '</div>';
+                genHtml += '<button onclick="removeState(' + gr2 + ')" style="background:none; border:none; color:red; font-size:10px; cursor:pointer;">🗑️ HAPUS</button></div>';
+
+                for (var ga2 = 0; ga2 < gRow2.actions.length; ga2++) {
+                    var gAct2 = gRow2.actions[ga2];
                     genHtml += '<div style="display:flex; gap:5px; align-items:center; margin-bottom:4px; padding:4px; background:#fdfdfd; border-radius:5px; border:1px solid #eee;">';
-                    genHtml += '<select onchange="updateActionVal(\'m5\', \'' + gr + '\', ' + ga + ', \'port\', this.value)">' + getPortOptions(gAct.port, 'motor') + '</select>';
-                    genHtml += '<select onchange="updateActionVal(\'m5\', \'' + gr + '\', ' + ga + ', \'direction\', parseInt(this.value))"><option value="1" ' + (gAct.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (gAct.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (gAct.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
-                    genHtml += '<input type="number" value="' + gAct.speed + '" style="width:35px; text-align:center;" oninput="updateActionVal(\'m5\', \'' + gr + '\', ' + ga + ', \'speed\', parseInt(this.value))"><span onclick="removeActionFromState(' + gr + ',' + ga + ')" style="cursor:pointer; color:red; margin-left:auto;">×</span></div>';
+                    genHtml += '<select onchange="updateActionVal(\'m5\', \'' + gr2 + '\', ' + ga2 + ', \'port\', this.value)">' + getPortOptions(gAct2.port, 'motor') + '</select>';
+                    genHtml += '<select onchange="updateActionVal(\'m5\', \'' + gr2 + '\', ' + ga2 + ', \'direction\', parseInt(this.value))"><option value="1" ' + (gAct2.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (gAct2.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (gAct2.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
+                    genHtml += '<input type="number" value="' + gAct2.speed + '" style="width:35px; text-align:center;" oninput="updateActionVal(\'m5\', \'' + gr2 + '\', ' + ga2 + ', \'speed\', parseInt(this.value))"><span onclick="removeActionFromState(' + gr2 + ',' + ga2 + ')" style="cursor:pointer; color:red; margin-left:auto;">×</span></div>';
                 }
-                genHtml += '<button style="font-size:9px; padding:4px 10px; background:#f8f9fa; border:1px solid #ccc; border-radius:4px;" onclick="addActionToState(' + gr + ')">+ TAMBAH MOTOR</button></div>';
+                genHtml += '<button style="font-size:9px; padding:4px 10px; background:#f8f9fa; border:1px solid #ccc; border-radius:4px;" onclick="addActionToState(' + gr2 + ')">+ TAMBAH MOTOR</button></div>';
             }
             genHtml += '<button class="btn btn-success" style="width:100%; padding:10px; font-weight:bold; font-size:12px;" onclick="addState()">➕ TAMBAH STATE BARU</button>';
         }
         else if (GlobalMission.type === 'remote') {
             genHtml += '<div style="background:#eaf2f8; border:1.5px solid #2980b9; border-radius:10px; padding:15px; text-align:center;">';
             genHtml += '<h4 style="margin:0 0 10px 0; color:#2471a3;">🎮 PANEL TANK DRIVE REMOTE CONTROL</h4>';
-            genHtml += '<p style="font-size:11px; color:#555; margin-bottom:15px;">Gunakan tombol berikut untuk mengontrol motor kiri (Port A) dan kanan (Port B) secara instan.</p>';
+            genHtml += '<p style="font-size:11px; color:#555; margin-bottom:10px;">Pilih robot target, lalu kendalikan motor kiri (Port A) dan kanan (Port B).</p>';
+            genHtml += '<select id="remote-target" style="max-width:280px; margin:0 auto 12px; font-size:11px;">';
+            var ents = getPlayableEntities();
+            if (ents.length === 0) {
+                genHtml += '<option value="">Tidak ada robot terkoneksi</option>';
+            } else {
+                for (var ei = 0; ei < ents.length; ei++) {
+                    genHtml += '<option value="' + ents[ei].id + '">' + ents[ei].name + '</option>';
+                }
+            }
+            genHtml += '</select>';
             genHtml += '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">';
-            
+
             genHtml += '<div style="background:white; padding:10px; border-radius:8px; border:1px solid #a9cce3;">';
             genHtml += '<strong style="font-size:11px; color:#2980b9; display:block; margin-bottom:8px;">MOTOR KIRI (Port A)</strong>';
             genHtml += '<div style="display:flex; flex-direction:column; gap:6px;">';
@@ -819,16 +1108,18 @@
         container.innerHTML = genHtml;
     };
 
+    // Remote sekarang mengarah ke SATU robot terpilih (bukan broadcast ke semua hub
+    // sekaligus) -- penting begitu ada >1 hub aktif supaya remote tidak menggerakkan
+    // semua robot bersamaan tanpa sengaja.
     window.sendTankCommand = async function(side, direction, speed) {
-        var entities = getPlayableEntities();
-        if (entities.length === 0) return alert("Tidak ada robot terkoneksi!");
-        for (var i = 0; i < entities.length; i++) {
-            var ent = entities[i];
-            var targetPortChar = (side === 'left') ? 'A' : 'B';
-            var hw = resolveHardwarePort(ent, targetPortChar);
-            if (hw.hubId) {
-                setMotor(hw.hubId, hw.port, speed * direction);
-            }
+        var sel = document.getElementById('remote-target');
+        if (!sel || !sel.value) return alert("Pilih robot target dulu di dropdown remote!");
+        var ent = getPlayableEntities().find(e => e.id === sel.value);
+        if (!ent) return;
+        var targetPortChar = (side === 'left') ? 'A' : 'B';
+        var hw = resolveHardwarePort(ent, targetPortChar);
+        if (hw.hubId) {
+            setMotor(hw.hubId, hw.port, speed * direction);
         }
     };
 
@@ -842,22 +1133,22 @@
         this.logicLock = false;
         this.timer = null;
         this.keepAliveTimer = null;
-        this.lastTiltCache = {};
 
         this.start = function() {
             if (this.isRunning) return;
             this.isRunning = true;
             this.stateIndex = 1;
-            this.lastTiltCache = {};
-            
+
             var txt = document.getElementById('status-' + this.entityId);
-            if (txt) txt.innerText = "STATUS: RUNNING";
+            if (txt) { txt.innerText = "RUNNING"; txt.className = 'status-badge running'; }
 
             var stateInd = document.getElementById('stateIndicator-' + this.entityId);
             if (stateInd && GlobalMission.type === 'm5') {
                 stateInd.style.display = 'block';
                 stateInd.innerText = '📍 STATE AKTIF: [ 1 ]';
             }
+
+            refreshStatusDots();
 
             if (GlobalMission.type === 'remote') return;
 
@@ -872,7 +1163,7 @@
                         setMotor(hw.hubId, hw.port, act.speed * act.direction);
                     }
                 }
-            }, 400);
+            }, 200);
 
             this.timer = setInterval(() => {
                 if (!this.isRunning || this.logicLock) return;
@@ -885,11 +1176,9 @@
             clearInterval(this.timer);
             clearInterval(this.keepAliveTimer);
             this.currentActions = [];
-            this.lastTiltCache = {};
-            
+
             if (this.engineInstance) {
-                this.engineInstance.lastSentPower[1] = null;
-                this.engineInstance.lastSentPower[2] = null;
+                this.engineInstance._motors.forEach(m => { if (m) m.resetState(); });
             }
 
             var ent = getPlayableEntities().find(e => e.id === this.entityId);
@@ -900,10 +1189,12 @@
                 });
             }
             var txt = document.getElementById('status-' + this.entityId);
-            if (txt) txt.innerText = "STATUS: IDLE";
+            if (txt) { txt.innerText = "IDLE"; txt.className = 'status-badge'; }
 
             var stateInd = document.getElementById('stateIndicator-' + this.entityId);
             if (stateInd) stateInd.style.display = 'none';
+
+            refreshStatusDots();
         };
 
         this.runLocal = async function() {
@@ -911,10 +1202,10 @@
             if (!ent) return;
 
             if (GlobalMission.type === 'm1') {
-                this.currentActions = GlobalMission.rows[0].actions;
+                this.currentActions = GlobalMission.m1Row.actions;
             }
             else if (GlobalMission.type === 'm2') {
-                var row2 = GlobalMission.rows[this.stateIndex - 1];
+                var row2 = GlobalMission.m2Rows[this.stateIndex - 1];
                 if (!row2) {
                     if (GlobalMission.m2Loop) {
                         this.stateIndex = 1;
@@ -926,12 +1217,12 @@
                 }
                 this.logicLock = true;
                 this.currentActions = row2.actions;
-                
+
                 await new Promise(r => setTimeout(r, row2.time * 1000));
                 if (this.isRunning) {
                     this.stateIndex++;
                     this.logicLock = false;
-                    if (this.stateIndex > GlobalMission.rows.length) {
+                    if (this.stateIndex > GlobalMission.m2Rows.length) {
                         if (GlobalMission.m2Loop) {
                             this.stateIndex = 1;
                         } else {
@@ -942,8 +1233,8 @@
             }
             else if (GlobalMission.type === 'm3') {
                 var triggered = false;
-                for (var i = 0; i < GlobalMission.rows.length; i++) {
-                    var r3 = GlobalMission.rows[i];
+                for (var i = 0; i < GlobalMission.m3Rows.length; i++) {
+                    var r3 = GlobalMission.m3Rows[i];
                     var hw3 = resolveHardwarePort(ent, r3.sensorPort);
                     var val = getSensorVal(hw3.hubId, r3.sensorPort, r3.sensorType);
 
@@ -970,8 +1261,8 @@
                 }
             }
             else if (GlobalMission.type === 'm4') {
-                for (var i = 0; i < GlobalMission.rows.length; i++) {
-                    var r4 = GlobalMission.rows[i];
+                for (var i2 = 0; i2 < GlobalMission.m4Rows.length; i2++) {
+                    var r4 = GlobalMission.m4Rows[i2];
                     var hw4 = resolveHardwarePort(ent, r4.sensorPort);
                     var val4 = getSensorVal(hw4.hubId, r4.sensorPort, r4.sensorType);
 
@@ -998,7 +1289,7 @@
                     this.logicLock = true;
                     this.stateIndex++;
                     if (this.stateIndex > GlobalMission.states.length) this.stateIndex = 1;
-                    
+
                     var stateInd = document.getElementById('stateIndicator-' + this.entityId);
                     if (stateInd) {
                         stateInd.style.display = 'block';
@@ -1013,40 +1304,59 @@
         };
     };
 
+    // ================== HELPER MUTASI DATA MISI (per-mode, tidak saling tabrakan) ==================
     window.addGlobalRow = function() {
         if (GlobalMission.type === 'm2') {
-            GlobalMission.rows.push({ time: 2, actions: [{ port: 'A', direction: 1, speed: 100 }] });
+            GlobalMission.m2Rows.push({ time: 2, actions: [{ port: 'A', direction: 1, speed: 100 }] });
         } else if (GlobalMission.type === 'm3') {
-            GlobalMission.rows.push({ sensorPort: 'A', sensorType: 'distance', operator: '<', threshold: 5, steps: [{ time: 2, actions: [{ port: 'A', direction: 1, speed: 100 }] }] });
+            GlobalMission.m3Rows.push({ sensorPort: 'A', sensorType: 'distance', operator: '<', threshold: 5, steps: [{ time: 2, actions: [{ port: 'A', direction: 1, speed: 100 }] }] });
         } else if (GlobalMission.type === 'm4') {
-            GlobalMission.rows.push({ sensorPort: 'A', sensorType: 'tilt', operator: '==', threshold: 0, actions: [{ port: 'A', direction: 1, speed: 100 }] });
+            GlobalMission.m4Rows.push({ sensorPort: 'A', sensorType: 'tilt', operator: '==', threshold: 0, actions: [{ port: 'A', direction: 1, speed: 100 }] });
         }
         refreshGlobalRows();
     };
 
-    window.removeGlobalRow = function(idx) { GlobalMission.rows.splice(idx, 1); refreshGlobalRows(); };
-    window.addActionToRow = function(rowIdx) { GlobalMission.rows[rowIdx].actions.push({ port: 'B', direction: 1, speed: 100 }); refreshGlobalRows(); };
-    window.removeActionFromRow = function(rowIdx, actIdx) { GlobalMission.rows[rowIdx].actions.splice(actIdx, 1); refreshGlobalRows(); };
+    window.removeGlobalRow = function(idx) {
+        if (GlobalMission.type === 'm2') GlobalMission.m2Rows.splice(idx, 1);
+        else if (GlobalMission.type === 'm3') GlobalMission.m3Rows.splice(idx, 1);
+        else if (GlobalMission.type === 'm4') GlobalMission.m4Rows.splice(idx, 1);
+        refreshGlobalRows();
+    };
+
+    window.addActionToRow = function(rowIdx) {
+        if (GlobalMission.type === 'm1') GlobalMission.m1Row.actions.push({ port: 'B', direction: 1, speed: 100 });
+        else if (GlobalMission.type === 'm2') GlobalMission.m2Rows[rowIdx].actions.push({ port: 'B', direction: 1, speed: 100 });
+        else if (GlobalMission.type === 'm4') GlobalMission.m4Rows[rowIdx].actions.push({ port: 'B', direction: 1, speed: 100 });
+        refreshGlobalRows();
+    };
+
+    window.removeActionFromRow = function(rowIdx, actIdx) {
+        if (GlobalMission.type === 'm1') GlobalMission.m1Row.actions.splice(actIdx, 1);
+        else if (GlobalMission.type === 'm2') GlobalMission.m2Rows[rowIdx].actions.splice(actIdx, 1);
+        else if (GlobalMission.type === 'm4') GlobalMission.m4Rows[rowIdx].actions.splice(actIdx, 1);
+        refreshGlobalRows();
+    };
+
     window.addDefaultAction = function() { GlobalMission.defaultActions.push({ port: 'B', direction: 1, speed: 100 }); refreshGlobalRows(); };
     window.removeDefaultAction = function(idx) { GlobalMission.defaultActions.splice(idx, 1); refreshGlobalRows(); };
-    window.addStepToRow = function(rowIdx) { GlobalMission.rows[rowIdx].steps.push({ time: 2, actions: [{ port: 'A', direction: 1, speed: 100 }] }); refreshGlobalRows(); };
-    window.removeStepFromRow = function(rowIdx, stepIdx) { GlobalMission.rows[rowIdx].steps.splice(stepIdx, 1); refreshGlobalRows(); };
-    window.addActionToStep = function(rowIdx, stepIdx) { GlobalMission.rows[rowIdx].steps[stepIdx].actions.push({ port: 'B', direction: 1, speed: 100 }); refreshGlobalRows(); };
-    window.removeActionFromStep = function(rowIdx, stepIdx, actIdx) { GlobalMission.rows[rowIdx].steps[stepIdx].actions.splice(actIdx, 1); refreshGlobalRows(); };
+    window.addStepToRow = function(rowIdx) { GlobalMission.m3Rows[rowIdx].steps.push({ time: 2, actions: [{ port: 'A', direction: 1, speed: 100 }] }); refreshGlobalRows(); };
+    window.removeStepFromRow = function(rowIdx, stepIdx) { GlobalMission.m3Rows[rowIdx].steps.splice(stepIdx, 1); refreshGlobalRows(); };
+    window.addActionToStep = function(rowIdx, stepIdx) { GlobalMission.m3Rows[rowIdx].steps[stepIdx].actions.push({ port: 'B', direction: 1, speed: 100 }); refreshGlobalRows(); };
+    window.removeActionFromStep = function(rowIdx, stepIdx, actIdx) { GlobalMission.m3Rows[rowIdx].steps[stepIdx].actions.splice(actIdx, 1); refreshGlobalRows(); };
     window.addState = function() { GlobalMission.states.push({ actions: [{ port: 'A', direction: 1, speed: 100 }] }); refreshGlobalRows(); };
     window.removeState = function(idx) { GlobalMission.states.splice(idx, 1); refreshGlobalRows(); };
     window.addActionToState = function(stateIdx) { GlobalMission.states[stateIdx].actions.push({ port: 'B', direction: 1, speed: 100 }); refreshGlobalRows(); };
     window.removeActionFromState = function(stateIdx, actIdx) { GlobalMission.states[stateIdx].actions.splice(actIdx, 1); refreshGlobalRows(); };
 
     window.updateActionVal = function(type, rIdx, aIdx, key, val, stepIdx) {
-        if (type === 'm1') { GlobalMission.rows[0].actions[aIdx][key] = val; }
+        if (type === 'm1') { GlobalMission.m1Row.actions[aIdx][key] = val; }
         else if (type === 'normal' || type === 'm2_time') {
-            if (key === 'time') GlobalMission.rows[rIdx].time = val;
-            else GlobalMission.rows[rIdx].actions[aIdx][key] = val;
+            if (key === 'time') GlobalMission.m2Rows[rIdx].time = val;
+            else GlobalMission.m2Rows[rIdx].actions[aIdx][key] = val;
         } else if (type === 'm3_def') { GlobalMission.defaultActions[aIdx][key] = val; }
-        else if (type === 'm3_seq') { GlobalMission.rows[rIdx].steps[stepIdx].actions[aIdx][key] = val; }
-        else if (type === 'm3_time') { GlobalMission.rows[rIdx].steps[stepIdx].time = val; }
-        else if (type === 'm4_act') { GlobalMission.rows[rIdx].actions[aIdx][key] = val; }
+        else if (type === 'm3_seq') { GlobalMission.m3Rows[rIdx].steps[stepIdx].actions[aIdx][key] = val; }
+        else if (type === 'm3_time') { GlobalMission.m3Rows[rIdx].steps[stepIdx].time = val; }
+        else if (type === 'm4_act') { GlobalMission.m4Rows[rIdx].actions[aIdx][key] = val; }
         else if (type === 'm5') { GlobalMission.states[rIdx].actions[aIdx][key] = val; }
     };
 
@@ -1067,6 +1377,7 @@
     }
 
     renderMissionUI();
+    refreshStatusDots();
 </script>
 </body>
 </html>
