@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoboPanda - Ultimate Unified Mission Engine v40.6 🐼</title>
+    <title>RoboPanda - Ultimate Unified Mission Engine v40.6 </title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
 
@@ -94,22 +94,22 @@
 
 <div class="wrapper">
     <div class="top-actions">
-        <h1>🐼 RoboPanda Unified Control v40.6</h1>
+        <h1> RoboPanda Unified Control v40.6</h1>
         <div class="status-dots" id="globalStatusDots"><span class="status-dots-empty">Belum ada hub</span></div>
         <button class="btn-green" id="btnConnect">+ Hubungkan Hub</button>
     </div>
 
     <!-- PANEL PUSAT KONTROL MISI -->
     <div class="card">
-        <h2>📋 Global Mission Builder & Command Center</h2>
+        <h2> Global Mission Builder & Command Center</h2>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:8px; background:#f8fafc; border-radius:8px; flex-wrap:wrap; gap:6px;">
             <div style="font-size:11px; font-weight:bold; display:flex; gap:6px; align-items:center;">
                 <span>Warna LED Global:</span>
                 <input type="color" id="global-color" value="#9966FF" style="width:25px; height:25px; border:none; cursor:pointer;" onchange="setGlobalColor()">
             </div>
             <div style="display:flex; gap:6px;">
-                <button class="btn-warning" style="padding:6px 12px; font-size:11px;" onclick="broadcastMission()">🚀 JALANKAN SEMUA READY</button>
-                <button class="btn-red" style="padding:6px 12px; font-size:11px;" onclick="stopAllMissions()">🛑 STOP SEMUA MISI</button>
+                <button class="btn-warning" style="padding:6px 12px; font-size:11px;" onclick="broadcastMission()"> JALANKAN SEMUA READY</button>
+                <button class="btn-red" style="padding:6px 12px; font-size:11px;" onclick="stopAllMissions()"> STOP SEMUA MISI</button>
             </div>
         </div>
         <div id="mission-builder-container"></div>
@@ -583,7 +583,7 @@
                     const angleX = unwrapSignedByte(rawX);
                     const angleY = unwrapSignedByte(rawY);
                     logMessage('Hub ' + (this.hubIndex + 1) + ' Port ' + connectID +
-                        ' Tilt raw(' + rawX + ',' + rawY + ') sudut(' + angleX + '°,' + angleY + '°) → kode ' + filteredTilt, 'packet');
+                        ' Tilt raw(' + rawX + ',' + rawY + ') sudut(' + angleX + '�,' + angleY + '�)  kode ' + filteredTilt, 'packet');
                     this._lastTiltLogged[connectID] = filteredTilt;
                 }
 
@@ -640,7 +640,7 @@
             // supaya kelihatan kalau port yang dipilih di mission builder ternyata
             // BUKAN port yang ada motornya (misal masih default Port A padahal
             // sensor terpasang di situ, motor sebenarnya di Port B).
-            logMessage('⚠️ Hub ' + (eng.hubIndex + 1) + ' Port ' + portNum + ': tidak ada motor terdaftar di port ini. Cek lagi pilihan port di langkah misi.', 'warn');
+            logMessage(' Hub ' + (eng.hubIndex + 1) + ' Port ' + portNum + ': tidak ada motor terdaftar di port ini. Cek lagi pilihan port di langkah misi.', 'warn');
             eng._motorWarnLogged = true;
         }
     };
@@ -689,17 +689,17 @@
                 '</div>' +
             '</div>' +
             '<div class="status-badge-row">' +
-                '<span class="status-badge ok" id="statusText-' + idx + '">Menyambung…</span>' +
+                '<span class="status-badge ok" id="statusText-' + idx + '">Menyambung�</span>' +
                 '<span class="status-badge" id="status-hub_' + idx + '">IDLE</span>' +
             '</div>' +
-            '<div id="stateIndicator-hub_' + idx + '" class="state-flag">📍 STATE AKTIF: [ 1 ]</div>' +
+            '<div id="stateIndicator-hub_' + idx + '" class="state-flag"> STATE AKTIF: [ 1 ]</div>' +
 
             portRowHtml(idx, 1) +
             portRowHtml(idx, 2) +
 
             '<div class="button-row">' +
-                '<button class="btn-green" onclick="engines[' + idx + '].runner.start()">▶ START</button>' +
-                '<button class="btn-red" onclick="engines[' + idx + '].runner.stop()">⏹ STOP</button>' +
+                '<button class="btn-green" onclick="engines[' + idx + '].runner.start()"> START</button>' +
+                '<button class="btn-red" onclick="engines[' + idx + '].runner.stop()"> STOP</button>' +
             '</div>' +
         '</div>';
     }
@@ -710,9 +710,9 @@
             '<span class="port-label">P' + portNum + '</span>' +
             '<span class="port-type" id="port' + portNum + 'Type-' + idx + '">Kosong</span>' +
             '<span class="port-val" id="port' + portNum + 'Val-' + idx + '">0</span>' +
-            '<button class="btn-green mini-btn" onclick="directDriveManual(' + idx + ',' + portNum + ',100)">▲</button>' +
-            '<button class="btn-green mini-btn" onclick="directDriveManual(' + idx + ',' + portNum + ',-100)">▼</button>' +
-            '<button class="btn-red mini-btn" onclick="directDriveManual(' + idx + ',' + portNum + ',0)">■</button>' +
+            '<button class="btn-green mini-btn" onclick="directDriveManual(' + idx + ',' + portNum + ',100)"></button>' +
+            '<button class="btn-green mini-btn" onclick="directDriveManual(' + idx + ',' + portNum + ',-100)"></button>' +
+            '<button class="btn-red mini-btn" onclick="directDriveManual(' + idx + ',' + portNum + ',0)"></button>' +
         '</div>';
     }
 
@@ -724,7 +724,7 @@
         if (robotObj) robotObj.isReady = eng.isReady;
         var btn = document.getElementById('readyBtn-' + idx);
         if (btn) {
-            btn.innerText = eng.isReady ? 'READY 🟢' : 'READY';
+            btn.innerText = eng.isReady ? 'READY ' : 'READY';
             btn.style.background = eng.isReady ? '#00b894' : '#0984e3';
         }
     };
@@ -896,12 +896,12 @@
         var html = '<div style="margin-bottom:12px;">';
         html += '<label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">PILIH MODE MISI / KONTROL:</label>';
         html += '<select id="global-type" style="width:100%; padding:8px; border-radius:6px; font-weight:bold; font-size:12px; border:2px solid #bdc3c7;" onchange="updateGlobalType()">';
-        html += '<option value="m1" ' + (GlobalMission.type === 'm1' ? 'selected' : '') + '>🕹️ 1. DIRECT DRIVE (Normal)</option>';
-        html += '<option value="m2" ' + (GlobalMission.type === 'm2' ? 'selected' : '') + '>⏱️ 2. TIMER SEQUENCE (Waktu & Loop)</option>';
-        html += '<option value="m3" ' + (GlobalMission.type === 'm3' ? 'selected' : '') + '>🧠 3. IR/TILT SENSOR (Reaksi Berantai - Auto-Routing)</option>';
-        html += '<option value="m4" ' + (GlobalMission.type === 'm4' ? 'selected' : '') + '>📐 4. TILT LATCH (Kunci Kondisi Anti-Jitter)</option>';
-        html += '<option value="m5" ' + (GlobalMission.type === 'm5' ? 'selected' : '') + '>🔄 5. STATE COUNTER (Siklus Berputar Aktif)</option>';
-        html += '<option value="remote" ' + (GlobalMission.type === 'remote' ? 'selected' : '') + '>🎮 6. TANK DRIVE REMOTE CONTROL</option>';
+        html += '<option value="m1" ' + (GlobalMission.type === 'm1' ? 'selected' : '') + '> 1. DIRECT DRIVE (Normal)</option>';
+        html += '<option value="m2" ' + (GlobalMission.type === 'm2' ? 'selected' : '') + '> 2. TIMER SEQUENCE (Waktu & Loop)</option>';
+        html += '<option value="m3" ' + (GlobalMission.type === 'm3' ? 'selected' : '') + '> 3. IR/TILT SENSOR (Reaksi Berantai - Auto-Routing)</option>';
+        html += '<option value="m4" ' + (GlobalMission.type === 'm4' ? 'selected' : '') + '> 4. TILT LATCH (Kunci Kondisi Anti-Jitter)</option>';
+        html += '<option value="m5" ' + (GlobalMission.type === 'm5' ? 'selected' : '') + '> 5. STATE COUNTER (Siklus Berputar Aktif)</option>';
+        html += '<option value="remote" ' + (GlobalMission.type === 'remote' ? 'selected' : '') + '> 6. TANK DRIVE REMOTE CONTROL</option>';
         html += '</select></div>';
         html += '<div id="mission-rows-container"></div>';
 
@@ -933,13 +933,13 @@
                 genHtml += '<select onchange="updateActionVal(\'m1\', 0, ' + a + ', \'port\', this.value)">' + getPortOptions(act.port, 'motor') + '</select>';
                 genHtml += '<select onchange="updateActionVal(\'m1\', 0, ' + a + ', \'direction\', parseInt(this.value))"><option value="1" ' + (act.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (act.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (act.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
                 genHtml += '<input type="number" value="' + act.speed + '" style="width:45px; text-align:center;" oninput="updateActionVal(\'m1\', 0, ' + a + ', \'speed\', parseInt(this.value))">';
-                genHtml += '<span onclick="removeActionFromRow(0,' + a + ')" style="cursor:pointer; color:red; margin-left:auto;">×</span></div>';
+                genHtml += '<span onclick="removeActionFromRow(0,' + a + ')" style="cursor:pointer; color:red; margin-left:auto;">�</span></div>';
             }
             genHtml += '<button style="font-size:10px; padding:5px 10px; background:#f1f2f6; border:1px solid #ccc; border-radius:4px;" onclick="addActionToRow(0)">+ TAMBAH MOTOR</button></div>';
         }
         else if (GlobalMission.type === 'm2') {
             genHtml += '<div style="background:#eaf2f8; padding:8px 12px; border-radius:8px; margin-bottom:10px; border:1px solid #a9cce3; display:flex; align-items:center; justify-content:space-between;">';
-            genHtml += '<span style="font-size:11px; font-weight:bold; color:#2471a3;">🔁 Opsi Eksekusi:</span>';
+            genHtml += '<span style="font-size:11px; font-weight:bold; color:#2471a3;"> Opsi Eksekusi:</span>';
             genHtml += '<label style="font-size:11px; cursor:pointer; display:flex; align-items:center; gap:5px;">';
             genHtml += '<input type="checkbox" ' + (GlobalMission.m2Loop ? 'checked' : '') + ' onchange="GlobalMission.m2Loop = this.checked"> Ulangi Terus (Looping)';
             genHtml += '</label></div>';
@@ -949,29 +949,29 @@
                 genHtml += '<div style="background:white; border:1px solid #bdc3c7; padding:8px; margin-bottom:8px; border-radius:8px;">';
                 genHtml += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">';
                 genHtml += '<div style="font-size:11px; font-weight:bold;">LANGKAH ' + (gr + 1) + ' | Waktu: <input type="number" value="' + gRow.time + '" style="width:35px; font-size:10px;" oninput="updateActionVal(\'m2_time\', \'' + gr + '\', null, \'time\', parseFloat(this.value))"> s</div>';
-                genHtml += '<button onclick="removeGlobalRow(' + gr + ')" style="background:none; border:none; color:red; font-size:10px; cursor:pointer;">🗑️ HAPUS</button></div>';
+                genHtml += '<button onclick="removeGlobalRow(' + gr + ')" style="background:none; border:none; color:red; font-size:10px; cursor:pointer;"> HAPUS</button></div>';
 
                 for (var ga = 0; ga < gRow.actions.length; ga++) {
                     var gAct = gRow.actions[ga];
                     genHtml += '<div style="display:flex; gap:5px; align-items:center; margin-bottom:4px; padding:4px; background:#fdfdfd; border-radius:5px; border:1px solid #eee;">';
                     genHtml += '<select onchange="updateActionVal(\'normal\', \'' + gr + '\', ' + ga + ', \'port\', this.value)">' + getPortOptions(gAct.port, 'motor') + '</select>';
                     genHtml += '<select onchange="updateActionVal(\'normal\', \'' + gr + '\', ' + ga + ', \'direction\', parseInt(this.value))"><option value="1" ' + (gAct.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (gAct.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (gAct.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
-                    genHtml += '<input type="number" value="' + gAct.speed + '" style="width:35px; text-align:center;" oninput="updateActionVal(\'normal\', \'' + gr + '\', ' + ga + ', \'speed\', parseInt(this.value))"><span onclick="removeActionFromRow(' + gr + ',' + ga + ')" style="cursor:pointer; color:red; margin-left:auto;">×</span></div>';
+                    genHtml += '<input type="number" value="' + gAct.speed + '" style="width:35px; text-align:center;" oninput="updateActionVal(\'normal\', \'' + gr + '\', ' + ga + ', \'speed\', parseInt(this.value))"><span onclick="removeActionFromRow(' + gr + ',' + ga + ')" style="cursor:pointer; color:red; margin-left:auto;">�</span></div>';
                 }
                 genHtml += '<button style="font-size:9px; padding:4px 10px; background:#f8f9fa; border:1px solid #ccc; border-radius:4px;" onclick="addActionToRow(' + gr + ')">+ TAMBAH MOTOR</button></div>';
             }
-            genHtml += '<button class="btn btn-success" style="width:100%; padding:10px; font-weight:bold; font-size:12px;" onclick="addGlobalRow()">➕ TAMBAH LANGKAH WAKTU BARU</button>';
+            genHtml += '<button class="btn btn-success" style="width:100%; padding:10px; font-weight:bold; font-size:12px;" onclick="addGlobalRow()"> TAMBAH LANGKAH WAKTU BARU</button>';
         }
         else if (GlobalMission.type === 'm3') {
             genHtml += '<div style="background:#e8f8f5; border:1.5px solid #1abc9c; border-radius:10px; padding:10px; margin-bottom:10px;">';
-            genHtml += '<div style="font-size:11px; font-weight:bold; color:#16a085; margin-bottom:8px;">🟢 KONDISI NORMAL (DEFAULT):</div>';
+            genHtml += '<div style="font-size:11px; font-weight:bold; color:#16a085; margin-bottom:8px;"> KONDISI NORMAL (DEFAULT):</div>';
             for (var d = 0; d < GlobalMission.defaultActions.length; d++) {
                 var dAct = GlobalMission.defaultActions[d];
                 genHtml += '<div style="display:flex; gap:5px; align-items:center; margin-bottom:5px; padding:5px; background:#fff; border-radius:6px; border:1px solid #d1f2eb;">';
                 genHtml += '<select onchange="updateActionVal(\'m3_def\', \'def\', ' + d + ', \'port\', this.value)" style="font-size:10px;">' + getPortOptions(dAct.port, 'motor') + '</select>';
                 genHtml += '<select onchange="updateActionVal(\'m3_def\', \'def\', ' + d + ', \'direction\', parseInt(this.value))" style="font-size:10px;"><option value="1" ' + (dAct.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (dAct.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (dAct.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
                 genHtml += '<input type="number" value="' + dAct.speed + '" style="width:35px; font-size:10px; text-align:center;" oninput="updateActionVal(\'m3_def\', \'def\', ' + d + ', \'speed\', parseInt(this.value))">';
-                genHtml += '<span onclick="removeDefaultAction(' + d + ')" style="cursor:pointer; color:#e74c3c; font-weight:bold; margin-left:auto;">×</span></div>';
+                genHtml += '<span onclick="removeDefaultAction(' + d + ')" style="cursor:pointer; color:#e74c3c; font-weight:bold; margin-left:auto;">�</span></div>';
             }
             genHtml += '<button style="font-size:9px; padding:4px 10px; background:white; border:1px solid #1abc9c; color:#16a085; border-radius:5px; font-weight:bold;" onclick="addDefaultAction()">+ TAMBAH MOTOR</button></div>';
 
@@ -983,9 +983,9 @@
 
                 genHtml += '<div style="background:#fffafa; border:2px solid #e74c3c; border-radius:10px; padding:10px; margin-bottom:10px;">';
                 genHtml += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">';
-                genHtml += '<div style="display:flex; gap:6px; align-items:center; font-size:11px;"><strong style="color:#c0392b;">⚡ JIKA:</strong>';
+                genHtml += '<div style="display:flex; gap:6px; align-items:center; font-size:11px;"><strong style="color:#c0392b;"> JIKA:</strong>';
                 genHtml += '<select onchange="GlobalMission.m3Rows[' + r + '].sensorPort=this.value; GlobalMission.m3Rows[' + r + '].sensorType=getAutoSensorType(this.value); GlobalMission.m3Rows[' + r + '].threshold = (GlobalMission.m3Rows[' + r + '].sensorType === \'tilt\' ? 0 : 5); refreshGlobalRows();" style="font-size:10px;">' + getPortOptions(row.sensorPort, 'sensor') + '</select>';
-                genHtml += '<span style="background:#fadbd8; color:#900c3f; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:bold;">🔍 ' + detectedType.toUpperCase() + ' (Auto)</span>';
+                genHtml += '<span style="background:#fadbd8; color:#900c3f; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:bold;"> ' + detectedType.toUpperCase() + ' (Auto)</span>';
                 genHtml += '<select onchange="GlobalMission.m3Rows[' + r + '].operator=this.value;" style="font-size:10px;"><option value="<" ' + (row.operator === '<' ? 'selected' : '') + '> < </option><option value="==" ' + (row.operator === '==' ? 'selected' : '') + '> = </option><option value=">" ' + (row.operator === '>' ? 'selected' : '') + '> > </option></select>';
                 genHtml += '<select onchange="GlobalMission.m3Rows[' + r + '].threshold=parseInt(this.value);" style="font-size:10px;">' + vDrop + '</select></div>';
                 genHtml += '<button onclick="removeGlobalRow(' + r + ')" style="background:none; border:none; color:#e74c3c; font-weight:bold; cursor:pointer;">HAPUS</button></div>';
@@ -994,20 +994,20 @@
                     var step = row.steps[s];
                     genHtml += '<div style="background:#fff; padding:8px; border-radius:8px; border:1px solid #ddd; margin-bottom:8px;">';
                     genHtml += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><span style="font-size:10px; font-weight:bold;">LANGKAH ' + (s + 1) + ':</span>';
-                    genHtml += '<div style="font-size:10px;">⏱️ <input type="number" step="0.5" value="' + step.time + '" style="width:35px;" oninput="updateActionVal(\'m3_time\', \'' + r + '\', null, \'time\', parseFloat(this.value), ' + s + ')"> s <span onclick="removeStepFromRow(' + r + ',' + s + ')" style="cursor:pointer; color:red;">🗑️</span></div></div>';
+                    genHtml += '<div style="font-size:10px;"> <input type="number" step="0.5" value="' + step.time + '" style="width:35px;" oninput="updateActionVal(\'m3_time\', \'' + r + '\', null, \'time\', parseFloat(this.value), ' + s + ')"> s <span onclick="removeStepFromRow(' + r + ',' + s + ')" style="cursor:pointer; color:red;"></span></div></div>';
 
                     for (var a2 = 0; a2 < step.actions.length; a2++) {
                         var sAct = step.actions[a2];
                         genHtml += '<div style="display:flex; gap:5px; align-items:center; margin-bottom:4px; padding:4px; background:#f9f9f9; border-radius:5px;">';
                         genHtml += '<select onchange="updateActionVal(\'m3_seq\', \'' + r + '\', ' + a2 + ', \'port\', this.value, ' + s + ')" style="font-size:10px;">' + getPortOptions(sAct.port, 'motor') + '</select>';
                         genHtml += '<select onchange="updateActionVal(\'m3_seq\', \'' + r + '\', ' + a2 + ', \'direction\', parseInt(this.value), ' + s + ')" style="font-size:10px;"><option value="1" ' + (sAct.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (sAct.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (sAct.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
-                        genHtml += '<input type="number" value="' + sAct.speed + '" style="width:35px; font-size:10px;" oninput="updateActionVal(\'m3_seq\', \'' + r + '\', ' + a2 + ', \'speed\', parseInt(this.value), ' + s + ')"><span onclick="removeActionFromStep(' + r + ',' + s + ',' + a2 + ')" style="cursor:pointer; color:red; margin-left:auto;">×</span></div>';
+                        genHtml += '<input type="number" value="' + sAct.speed + '" style="width:35px; font-size:10px;" oninput="updateActionVal(\'m3_seq\', \'' + r + '\', ' + a2 + ', \'speed\', parseInt(this.value), ' + s + ')"><span onclick="removeActionFromStep(' + r + ',' + s + ',' + a2 + ')" style="cursor:pointer; color:red; margin-left:auto;">�</span></div>';
                     }
                     genHtml += '<button style="font-size:9px; padding:3px 8px; background:#f4f6f7; border:1px solid #ccc; border-radius:4px;" onclick="addActionToStep(' + r + ',' + s + ')">+ MOTOR</button></div>';
                 }
                 genHtml += '<button style="width:100%; font-size:10px; background:#fbeeee; border:1px dashed #e74c3c; color:#c0392b; padding:8px; border-radius:6px;" onclick="addStepToRow(' + r + ')">+ TAMBAH LANGKAH WAKTU</button></div>';
             }
-            genHtml += '<button class="btn btn-danger" style="width:100%; padding:12px; font-weight:bold; font-size:12px;" onclick="addGlobalRow()">➕ TAMBAH PEMICU REAKSI BARU</button>';
+            genHtml += '<button class="btn btn-danger" style="width:100%; padding:12px; font-weight:bold; font-size:12px;" onclick="addGlobalRow()"> TAMBAH PEMICU REAKSI BARU</button>';
         }
         else if (GlobalMission.type === 'm4') {
             for (var r2 = 0; r2 < GlobalMission.m4Rows.length; r2++) {
@@ -1018,9 +1018,9 @@
 
                 genHtml += '<div style="background:#fef9e7; border:2px solid #f1c40f; border-radius:10px; padding:10px; margin-bottom:10px;">';
                 genHtml += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">';
-                genHtml += '<div style="display:flex; gap:6px; align-items:center; font-size:11px;"><strong style="color:#d4ac0d;">📐 JIKA SENSOR:</strong>';
+                genHtml += '<div style="display:flex; gap:6px; align-items:center; font-size:11px;"><strong style="color:#d4ac0d;"> JIKA SENSOR:</strong>';
                 genHtml += '<select onchange="GlobalMission.m4Rows[' + r2 + '].sensorPort=this.value; GlobalMission.m4Rows[' + r2 + '].sensorType=getAutoSensorType(this.value); GlobalMission.m4Rows[' + r2 + '].threshold = (GlobalMission.m4Rows[' + r2 + '].sensorType === \'tilt\' ? 0 : 5); refreshGlobalRows();" style="font-size:10px;">' + getPortOptions(row4.sensorPort, 'sensor') + '</select>';
-                genHtml += '<span style="background:#fcf3cf; color:#7d6608; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:bold;">🔍 ' + detectedType4.toUpperCase() + ' (Auto)</span>';
+                genHtml += '<span style="background:#fcf3cf; color:#7d6608; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:bold;"> ' + detectedType4.toUpperCase() + ' (Auto)</span>';
                 genHtml += '<select onchange="GlobalMission.m4Rows[' + r2 + '].operator=this.value;" style="font-size:10px;"><option value="<" ' + (row4.operator === '<' ? 'selected' : '') + '> < </option><option value="==" ' + (row4.operator === '==' ? 'selected' : '') + '> = </option><option value=">" ' + (row4.operator === '>' ? 'selected' : '') + '> > </option></select>';
                 genHtml += '<select onchange="GlobalMission.m4Rows[' + r2 + '].threshold=parseInt(this.value);" style="font-size:10px;">' + vDrop4 + '</select></div>';
                 genHtml += '<button onclick="removeGlobalRow(' + r2 + ')" style="background:none; border:none; color:#c0392b; font-weight:bold; cursor:pointer;">HAPUS</button></div>';
@@ -1031,11 +1031,11 @@
                     genHtml += '<div style="display:flex; gap:5px; align-items:center; margin-bottom:4px; padding:4px; background:#fff; border-radius:5px; border:1px solid #f7dc6f;">';
                     genHtml += '<select onchange="updateActionVal(\'m4_act\', \'' + r2 + '\', ' + a3 + ', \'port\', this.value)" style="font-size:10px;">' + getPortOptions(act4.port, 'motor') + '</select>';
                     genHtml += '<select onchange="updateActionVal(\'m4_act\', \'' + r2 + '\', ' + a3 + ', \'direction\', parseInt(this.value))" style="font-size:10px;"><option value="1" ' + (act4.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (act4.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (act4.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
-                    genHtml += '<input type="number" value="' + act4.speed + '" style="width:35px; font-size:10px;" oninput="updateActionVal(\'m4_act\', \'' + r2 + '\', ' + a3 + ', \'speed\', parseInt(this.value))"><span onclick="removeActionFromRow(' + r2 + ',' + a3 + ')" style="cursor:pointer; color:red; margin-left:auto;">×</span></div>';
+                    genHtml += '<input type="number" value="' + act4.speed + '" style="width:35px; font-size:10px;" oninput="updateActionVal(\'m4_act\', \'' + r2 + '\', ' + a3 + ', \'speed\', parseInt(this.value))"><span onclick="removeActionFromRow(' + r2 + ',' + a3 + ')" style="cursor:pointer; color:red; margin-left:auto;">�</span></div>';
                 }
                 genHtml += '<button style="font-size:9px; padding:4px 8px; background:white; border:1px solid #f1c40f; border-radius:4px;" onclick="addActionToRow(' + r2 + ')">+ TAMBAH MOTOR KUNCI</button></div>';
             }
-            genHtml += '<button class="btn btn-warning" style="width:100%; padding:10px; font-weight:bold; font-size:12px; color:white;" onclick="addGlobalRow()">➕ TAMBAH KONDISI LATCH BARU</button>';
+            genHtml += '<button class="btn btn-warning" style="width:100%; padding:10px; font-weight:bold; font-size:12px; color:white;" onclick="addGlobalRow()"> TAMBAH KONDISI LATCH BARU</button>';
         }
         else if (GlobalMission.type === 'm5') {
             var detectedM5Type = getAutoSensorType(GlobalMission.m5TriggerPort);
@@ -1043,9 +1043,9 @@
             var vDropM5 = (detectedM5Type === 'tilt') ? getTiltSelectorOptions(GlobalMission.m5TriggerVal) : getIrSelectorOptions(GlobalMission.m5TriggerVal);
 
             genHtml += '<div style="background:#fdf2e9; padding:10px; border-radius:8px; margin-bottom:10px; font-size:11px; border:1px solid #f5cba7;">';
-            genHtml += '<strong>⚙️ TRIGGER PINDAH STATE (Auto-Routing):</strong><br><div style="display:flex; gap:6px; align-items:center; margin-top:6px;">';
+            genHtml += '<strong> TRIGGER PINDAH STATE (Auto-Routing):</strong><br><div style="display:flex; gap:6px; align-items:center; margin-top:6px;">';
             genHtml += '<select onchange="GlobalMission.m5TriggerPort=this.value; GlobalMission.m5SensorType=getAutoSensorType(this.value); GlobalMission.m5TriggerVal = (GlobalMission.m5SensorType === \'tilt\' ? 0 : 5); refreshGlobalRows();">' + getPortOptions(GlobalMission.m5TriggerPort, 'sensor') + '</select>';
-            genHtml += '<span style="background:#fadbd8; color:#900c3f; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:bold;">🔍 ' + detectedM5Type.toUpperCase() + ' (Auto)</span>';
+            genHtml += '<span style="background:#fadbd8; color:#900c3f; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:bold;"> ' + detectedM5Type.toUpperCase() + ' (Auto)</span>';
             genHtml += '<select onchange="GlobalMission.m5Operator=this.value;"><option value="<" ' + (GlobalMission.m5Operator === '<' ? 'selected' : '') + '> < </option><option value="==" ' + (GlobalMission.m5Operator === '==' ? 'selected' : '') + '> = </option><option value=">" ' + (GlobalMission.m5Operator === '>' ? 'selected' : '') + '> > </option></select>';
             genHtml += '<select onchange="GlobalMission.m5TriggerVal=parseInt(this.value);">' + vDropM5 + '</select></div></div>';
 
@@ -1055,22 +1055,22 @@
                 genHtml += '<div style="background:white; border:1px solid #bdc3c7; padding:8px; margin-bottom:8px; border-radius:8px;">';
                 genHtml += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">';
                 genHtml += '<div style="font-size:11px; font-weight:bold;">STATE ' + (gr2 + 1) + '</div>';
-                genHtml += '<button onclick="removeState(' + gr2 + ')" style="background:none; border:none; color:red; font-size:10px; cursor:pointer;">🗑️ HAPUS</button></div>';
+                genHtml += '<button onclick="removeState(' + gr2 + ')" style="background:none; border:none; color:red; font-size:10px; cursor:pointer;"> HAPUS</button></div>';
 
                 for (var ga2 = 0; ga2 < gRow2.actions.length; ga2++) {
                     var gAct2 = gRow2.actions[ga2];
                     genHtml += '<div style="display:flex; gap:5px; align-items:center; margin-bottom:4px; padding:4px; background:#fdfdfd; border-radius:5px; border:1px solid #eee;">';
                     genHtml += '<select onchange="updateActionVal(\'m5\', \'' + gr2 + '\', ' + ga2 + ', \'port\', this.value)">' + getPortOptions(gAct2.port, 'motor') + '</select>';
                     genHtml += '<select onchange="updateActionVal(\'m5\', \'' + gr2 + '\', ' + ga2 + ', \'direction\', parseInt(this.value))"><option value="1" ' + (gAct2.direction === 1 ? 'selected' : '') + '>MAJU</option><option value="-1" ' + (gAct2.direction === -1 ? 'selected' : '') + '>MUNDUR</option><option value="0" ' + (gAct2.direction === 0 ? 'selected' : '') + '>STOP</option></select>';
-                    genHtml += '<input type="number" value="' + gAct2.speed + '" style="width:35px; text-align:center;" oninput="updateActionVal(\'m5\', \'' + gr2 + '\', ' + ga2 + ', \'speed\', parseInt(this.value))"><span onclick="removeActionFromState(' + gr2 + ',' + ga2 + ')" style="cursor:pointer; color:red; margin-left:auto;">×</span></div>';
+                    genHtml += '<input type="number" value="' + gAct2.speed + '" style="width:35px; text-align:center;" oninput="updateActionVal(\'m5\', \'' + gr2 + '\', ' + ga2 + ', \'speed\', parseInt(this.value))"><span onclick="removeActionFromState(' + gr2 + ',' + ga2 + ')" style="cursor:pointer; color:red; margin-left:auto;">�</span></div>';
                 }
                 genHtml += '<button style="font-size:9px; padding:4px 10px; background:#f8f9fa; border:1px solid #ccc; border-radius:4px;" onclick="addActionToState(' + gr2 + ')">+ TAMBAH MOTOR</button></div>';
             }
-            genHtml += '<button class="btn btn-success" style="width:100%; padding:10px; font-weight:bold; font-size:12px;" onclick="addState()">➕ TAMBAH STATE BARU</button>';
+            genHtml += '<button class="btn btn-success" style="width:100%; padding:10px; font-weight:bold; font-size:12px;" onclick="addState()"> TAMBAH STATE BARU</button>';
         }
         else if (GlobalMission.type === 'remote') {
             genHtml += '<div style="background:#eaf2f8; border:1.5px solid #2980b9; border-radius:10px; padding:15px; text-align:center;">';
-            genHtml += '<h4 style="margin:0 0 10px 0; color:#2471a3;">🎮 PANEL TANK DRIVE REMOTE CONTROL</h4>';
+            genHtml += '<h4 style="margin:0 0 10px 0; color:#2471a3;"> PANEL TANK DRIVE REMOTE CONTROL</h4>';
             genHtml += '<p style="font-size:11px; color:#555; margin-bottom:10px;">Pilih robot target, lalu kendalikan motor kiri (Port A) dan kanan (Port B).</p>';
             genHtml += '<select id="remote-target" style="max-width:280px; margin:0 auto 12px; font-size:11px;">';
             var ents = getPlayableEntities();
@@ -1087,19 +1087,19 @@
             genHtml += '<div style="background:white; padding:10px; border-radius:8px; border:1px solid #a9cce3;">';
             genHtml += '<strong style="font-size:11px; color:#2980b9; display:block; margin-bottom:8px;">MOTOR KIRI (Port A)</strong>';
             genHtml += '<div style="display:flex; flex-direction:column; gap:6px;">';
-            genHtml += '<button class="btn btn-primary" style="padding:10px; font-size:11px;" onclick="sendTankCommand(\'left\', 1, 100)">▲ MAJU (100)</button>';
-            genHtml += '<button class="btn btn-warning" style="padding:8px; font-size:11px;" onclick="sendTankCommand(\'left\', 1, 50)">▲ PELAN (50)</button>';
-            genHtml += '<button class="btn btn-danger" style="padding:10px; font-size:11px;" onclick="sendTankCommand(\'left\', 1, 0)">■ STOP</button>';
-            genHtml += '<button class="btn btn-primary" style="padding:10px; font-size:11px;" onclick="sendTankCommand(\'left\', -1, 100)">▼ MUNDUR</button>';
+            genHtml += '<button class="btn btn-primary" style="padding:10px; font-size:11px;" onclick="sendTankCommand(\'left\', 1, 100)"> MAJU (100)</button>';
+            genHtml += '<button class="btn btn-warning" style="padding:8px; font-size:11px;" onclick="sendTankCommand(\'left\', 1, 50)"> PELAN (50)</button>';
+            genHtml += '<button class="btn btn-danger" style="padding:10px; font-size:11px;" onclick="sendTankCommand(\'left\', 1, 0)"> STOP</button>';
+            genHtml += '<button class="btn btn-primary" style="padding:10px; font-size:11px;" onclick="sendTankCommand(\'left\', -1, 100)"> MUNDUR</button>';
             genHtml += '</div></div>';
 
             genHtml += '<div style="background:white; padding:10px; border-radius:8px; border:1px solid #a9cce3;">';
             genHtml += '<strong style="font-size:11px; color:#2980b9; display:block; margin-bottom:8px;">MOTOR KANAN (Port B)</strong>';
             genHtml += '<div style="display:flex; flex-direction:column; gap:6px;">';
-            genHtml += '<button class="btn btn-primary" style="padding:10px; font-size:11px;" onclick="sendTankCommand(\'right\', 1, 100)">▲ MAJU (100)</button>';
-            genHtml += '<button class="btn btn-warning" style="padding:8px; font-size:11px;" onclick="sendTankCommand(\'right\', 1, 50)">▲ PELAN (50)</button>';
-            genHtml += '<button class="btn btn-danger" style="padding:10px; font-size:11px;" onclick="sendTankCommand(\'right\', 1, 0)">■ STOP</button>';
-            genHtml += '<button class="btn btn-primary" style="padding:10px; font-size:11px;" onclick="sendTankCommand(\'right\', -1, 100)">▼ MUNDUR</button>';
+            genHtml += '<button class="btn btn-primary" style="padding:10px; font-size:11px;" onclick="sendTankCommand(\'right\', 1, 100)"> MAJU (100)</button>';
+            genHtml += '<button class="btn btn-warning" style="padding:8px; font-size:11px;" onclick="sendTankCommand(\'right\', 1, 50)"> PELAN (50)</button>';
+            genHtml += '<button class="btn btn-danger" style="padding:10px; font-size:11px;" onclick="sendTankCommand(\'right\', 1, 0)"> STOP</button>';
+            genHtml += '<button class="btn btn-primary" style="padding:10px; font-size:11px;" onclick="sendTankCommand(\'right\', -1, 100)"> MUNDUR</button>';
             genHtml += '</div></div>';
 
             genHtml += '</div></div>';
@@ -1145,7 +1145,7 @@
             var stateInd = document.getElementById('stateIndicator-' + this.entityId);
             if (stateInd && GlobalMission.type === 'm5') {
                 stateInd.style.display = 'block';
-                stateInd.innerText = '📍 STATE AKTIF: [ 1 ]';
+                stateInd.innerText = ' STATE AKTIF: [ 1 ]';
             }
 
             refreshStatusDots();
@@ -1293,7 +1293,7 @@
                     var stateInd = document.getElementById('stateIndicator-' + this.entityId);
                     if (stateInd) {
                         stateInd.style.display = 'block';
-                        stateInd.innerText = '📍 STATE AKTIF: [ ' + this.stateIndex + ' ]';
+                        stateInd.innerText = ' STATE AKTIF: [ ' + this.stateIndex + ' ]';
                     }
 
                     setTimeout(() => { this.logicLock = false; }, 800);
