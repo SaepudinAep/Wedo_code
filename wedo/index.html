@@ -190,6 +190,7 @@
 
     const BLECharacteristic = {
         ATTACHED_IO: '00001527-1212-efde-1523-785feabcd123',
+        LOW_VOLTAGE_ALERT: '00001528-1212-efde-1523-785feabcd123',
         INPUT_VALUES: '00001560-1212-efde-1523-785feabcd123',
         INPUT_COMMAND: '00001563-1212-efde-1523-785feabcd123',
         OUTPUT_COMMAND: '00001565-1212-efde-1523-785feabcd123',
@@ -338,13 +339,13 @@
             this._parent.send(BLECharacteristic.OUTPUT_COMMAND, cmd);
         }
 
-        turnOff () {
+        turnOff (useLimiter = true) {
             const cmd = this._parent.generateOutputCommand(
                 this._connectID,
                 WeDo2Command.MOTOR_POWER,
                 [0]
             );
-            this._parent.send(BLECharacteristic.OUTPUT_COMMAND, cmd);
+            this._parent.send(BLECharacteristic.OUTPUT_COMMAND, cmd, useLimiter);
         }
 
         // Dipanggil dari setMotor() global -- signedSpeed: -100..100 (tanda = arah)
@@ -353,7 +354,7 @@
             this._lastSignedSpeed = signedSpeed;
 
             if (signedSpeed === 0) {
-                this.turnOff();
+                this.turnOff(false);
                 return;
             }
             this.direction = signedSpeed < 0 ? -1 : 1;
@@ -387,6 +388,7 @@
             this._writeQueue = Promise.resolve();
             this._rateLimiter = new RateLimiter(BLESendRateMax);
             this._rateLimitWarned = false;
+            this._batteryLevelIntervalId = null;
             this.runner = new ProgramRunner(this.id, this);
 
             AppState.robots.push({
@@ -410,6 +412,7 @@
             this.bleDevice.addEventListener('gattserverdisconnected', () => {
                 logMessage('Hub ' + (this.hubIndex + 1) + ' terputus.', 'error');
                 this.runner.stop();
+                if (this._batteryLevelIntervalId !== null) clearInterval(this._batteryLevelIntervalId);
                 const card = document.getElementById('hubCard-' + this.hubIndex);
                 if (card) card.remove();
                 AppState.robots = AppState.robots.filter(r => r.id !== this.id);
@@ -463,6 +466,17 @@
 
             this.setLEDMode();
             this.setRGB(9, 132, 227);
+            
+            if (this._batteryLevelIntervalId !== null) clearInterval(this._batteryLevelIntervalId);
+            this._batteryLevelIntervalId = setInterval(() => {
+                if (this.bleServer) {
+                    this.bleServer.getPrimaryService(BLEService.DEVICE_SERVICE)
+                        .then(svc => svc.getCharacteristic(BLECharacteristic.LOW_VOLTAGE_ALERT))
+                        .then(char => char.readValue())
+                        .catch(() => {});
+                }
+            }, 5000);
+            
             renderMissionUI();
             refreshStatusDots();
         }
@@ -505,10 +519,10 @@
             this.send(BLECharacteristic.INPUT_COMMAND, cmd);
         }
 
-        send (uuid, message) {
+        send (uuid, message, useLimiter = true) {
             if (!this.bleServer) return Promise.resolve();
 
-            if (!this._rateLimiter.okayToSend()) {
+            if (useLimiter && !this._rateLimiter.okayToSend()) {
                 // Persis perilaku resmi: kalau melebihi BLESendRateMax/detik, perintah
                 // ini DILEWATI (bukan diantre menumpuk) supaya hub tidak kebanjiran.
                 if (!this._rateLimitWarned) {
@@ -1137,6 +1151,7 @@
         this.start = function() {
             if (this.isRunning) return;
             this.isRunning = true;
+            this.logicLock = false;
             this.stateIndex = 1;
 
             var txt = document.getElementById('status-' + this.entityId);
@@ -1366,7 +1381,16 @@
         if (type === 'warn') color = '#fdcb6e';
         if (type === 'error') color = '#ff7675';
         if (type === 'packet') color = '#00b894';
-        box.innerHTML += '<br><span style="color:' + color + '">[' + new Date().toLocaleTimeString() + '] ' + msg + '</span>';
+        
+        const span = document.createElement('span');
+        span.style.color = color;
+        span.innerHTML = '<br>[' + new Date().toLocaleTimeString() + '] ' + msg;
+        box.appendChild(span);
+        
+        while (box.children.length > 50) {
+            box.removeChild(box.firstChild);
+        }
+        
         box.scrollTop = box.scrollHeight;
     }
 
