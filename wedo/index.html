@@ -469,13 +469,10 @@
             
             if (this._batteryLevelIntervalId !== null) clearInterval(this._batteryLevelIntervalId);
             this._batteryLevelIntervalId = setInterval(() => {
-                if (this.bleServer) {
-                    this.bleServer.getPrimaryService(BLEService.DEVICE_SERVICE)
-                        .then(svc => svc.getCharacteristic(BLECharacteristic.LOW_VOLTAGE_ALERT))
-                        .then(char => char.readValue())
-                        .catch(() => {});
+                if (this.bleServer && this.bleServer.connected && this.chars.inputValues) {
+                    this.chars.inputValues.readValue().catch(() => {});
                 }
-            }, 5000);
+            }, 4000);
             
             renderMissionUI();
             refreshStatusDots();
@@ -520,7 +517,7 @@
         }
 
         send (uuid, message, useLimiter = true) {
-            if (!this.bleServer) return Promise.resolve();
+            if (!this.bleServer || !this.bleServer.connected) return Promise.resolve();
 
             if (useLimiter && !this._rateLimiter.okayToSend()) {
                 // Persis perilaku resmi: kalau melebihi BLESendRateMax/detik, perintah
@@ -1152,6 +1149,7 @@
             if (this.isRunning) return;
             this.isRunning = true;
             this.logicLock = false;
+            this._runLocalBusy = false;
             this.stateIndex = 1;
 
             var txt = document.getElementById('status-' + this.entityId);
@@ -1181,13 +1179,16 @@
             }, 200);
 
             this.timer = setInterval(() => {
-                if (!this.isRunning || this.logicLock) return;
-                this.runLocal();
+                if (!this.isRunning || this.logicLock || this._runLocalBusy) return;
+                this._runLocalBusy = true;
+                this.runLocal().finally(() => { this._runLocalBusy = false; });
             }, 100);
         };
 
         this.stop = function() {
             this.isRunning = false;
+            this.logicLock = false;
+            this._runLocalBusy = false;
             clearInterval(this.timer);
             clearInterval(this.keepAliveTimer);
             this.currentActions = [];
@@ -1214,7 +1215,7 @@
 
         this.runLocal = async function() {
             var ent = getPlayableEntities().find(e => e.id === this.entityId);
-            if (!ent) return;
+            if (!ent) return Promise.resolve();
 
             if (GlobalMission.type === 'm1') {
                 this.currentActions = GlobalMission.m1Row.actions;
@@ -1382,9 +1383,11 @@
         if (type === 'error') color = '#ff7675';
         if (type === 'packet') color = '#00b894';
         
+        const br = document.createElement('br');
         const span = document.createElement('span');
         span.style.color = color;
-        span.innerHTML = '<br>[' + new Date().toLocaleTimeString() + '] ' + msg;
+        span.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+        box.appendChild(br);
         box.appendChild(span);
         
         while (box.children.length > 50) {
