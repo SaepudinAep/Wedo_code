@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gamepad micro:bit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e9ecf3; --pad:#f8f9fc; --pad-edge:#cfd4e0; --key:#ffffff; --key-edge:#b9c0d1;
+  --ink:#1d2433; --muted:#5a6479; --accent:#2f6df6; --ok:#12915a; --bad:#d63a3a;
+  --a:#2fa66b; --b:#e0483f; --x:#2f6df6; --y:#e8a81c; --log:#ffffff;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12151d; --pad:#232837; --pad-edge:#363d52; --key:#2e3548; --key-edge:#454e68;
+    --ink:#eef1f8; --muted:#9aa4bb; --accent:#6b9bff; --ok:#3ccf8e; --bad:#ff6b6b;
+    --a:#3ccf8e; --b:#ff6b5e; --x:#6b9bff; --y:#f3bb3d; --log:#1a1e2a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12151d; --pad:#232837; --pad-edge:#363d52; --key:#2e3548; --key-edge:#454e68;
+  --ink:#eef1f8; --muted:#9aa4bb; --accent:#6b9bff; --ok:#3ccf8e; --bad:#ff6b6b;
+  --a:#3ccf8e; --b:#ff6b5e; --x:#6b9bff; --y:#f3bb3d; --log:#1a1e2a; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Fredoka',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+main{max-width:1000px;margin:0 auto;padding:14px 14px 24px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between;margin-bottom:14px}
+h1{font-size:1.25rem;margin:0;font-weight:700}
+.status{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--muted)}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--bad)}
+.status[data-s="connected"] .dot{background:var(--ok)}
+.status[data-s="connecting"] .dot{background:var(--y)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{border:2px solid var(--accent);background:var(--accent);color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;min-height:48px}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:focus-visible,.key:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.notice{background:var(--pad);border:2px solid var(--bad);border-radius:14px;padding:12px 14px;margin-bottom:14px;display:none}
+.pad{background:var(--pad);border:3px solid var(--pad-edge);border-radius:48px 48px 64px 64px;padding:22px 18px 26px;
+  display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;justify-items:center}
+.cluster{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:6px;width:clamp(130px,30vw,300px);aspect-ratio:1}
+.key{border:3px solid var(--key-edge);background:var(--key);border-radius:16px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;font-weight:700;font-size:1.5rem;line-height:1;padding:0;
+  touch-action:none;box-shadow:0 5px 0 var(--key-edge);transition:transform .05s,box-shadow .05s;min-width:48px;min-height:48px}
+.key small{font-size:.7rem;font-weight:500;color:var(--muted);margin-top:3px}
+.key.on,.key:active{transform:translateY(4px);box-shadow:0 1px 0 var(--key-edge)}
+.key:disabled{opacity:.45;cursor:not-allowed}
+.d-up{grid-area:1/2}.d-left{grid-area:2/1}.d-right{grid-area:2/3}.d-down{grid-area:3/2}
+.d-mid{grid-area:2/2;background:transparent;border:0;box-shadow:none;pointer-events:none}
+.face .key{border-radius:50%}
+.f-y{grid-area:1/2;color:var(--y);border-color:var(--y)}
+.f-x{grid-area:2/1;color:var(--x);border-color:var(--x)}
+.f-b{grid-area:2/3;color:var(--b);border-color:var(--b)}
+.f-a{grid-area:3/2;color:var(--a);border-color:var(--a)}
+.centre{display:flex;flex-direction:column;gap:12px;align-items:center}
+.stop{width:96px;height:96px;border-radius:50%;background:var(--bad);border-color:var(--bad);color:#fff;font-size:1.05rem;
+  box-shadow:0 5px 0 rgba(0,0,0,.28)}
+.stop small{color:#fff;opacity:.85}
+.stop.on,.stop:active{box-shadow:0 1px 0 rgba(0,0,0,.28)}
+label.hold{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--muted);font-weight:500;cursor:pointer;text-align:center}
+label.hold input{width:22px;height:22px;accent-color:var(--accent)}
+.logwrap{margin-top:16px}
+.logwrap h2{font-size:1rem;margin:0 0 6px}
+#log{background:var(--log);border:2px solid var(--pad-edge);border-radius:14px;height:150px;overflow:auto;padding:10px 12px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;-webkit-user-select:text;user-select:text}
+#log div{padding:1px 0}
+.tx{color:var(--accent)}.rx{color:var(--ok)}.er{color:var(--bad)}.in{color:var(--muted)}
+.tip{color:var(--muted);font-size:.85rem;margin:10px 2px 0}
+@media (min-width:900px){
+  main{padding:22px 24px 32px}
+  h1{font-size:1.6rem}
+  .pad{padding:34px 36px 40px;gap:24px}
+  .key{font-size:2rem}
+  .stop{width:124px;height:124px;font-size:1.3rem}
+  #log{height:190px}
+}
+@media (max-width:560px){
+  .pad{grid-template-columns:1fr 1fr;border-radius:36px;padding:16px 10px 20px;gap:14px 6px}
+  .dpad{grid-column:1;grid-row:1}
+  .face{grid-column:2;grid-row:1}
+  .centre{grid-column:1/-1;grid-row:2;flex-direction:row;gap:16px}
+  .cluster{width:min(44vw,200px)}
+  .key{font-size:1.25rem;border-radius:12px}
+  .stop{width:84px;height:84px;font-size:.95rem}
+  label.hold{font-size:.85rem;text-align:left;max-width:170px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  main{padding:8px 12px 12px}
+  header{margin-bottom:8px}
+  h1{font-size:1rem}
+  .pad{grid-template-columns:1fr auto 1fr;padding:10px 14px 14px;border-radius:40px;gap:6px}
+  .dpad,.face,.centre{grid-column:auto;grid-row:auto}
+  .centre{flex-direction:column}
+  .cluster{width:min(30vw,58vh)}
+  .stop{width:68px;height:68px;font-size:.85rem}
+  .tip{display:none}
+  #log{height:90px}
+}
+@media (prefers-reduced-motion:reduce){.key{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Gamepad micro:bit</h1>
+    <div class="row">
+      <div class="status" id="status" data-s="idle" role="status"><span class="dot"></span><span id="statusText">Belum terhubung</span></div>
+      <button class="btn" id="connectBtn">Hubungkan</button>
+      <button class="btn ghost" id="reconnectBtn" hidden>Sambung ulang</button>
+    </div>
+  </header>
+
+  <div class="notice" id="notice"></div>
+
+  <section class="pad" aria-label="Gamepad">
+    <div class="cluster dpad">
+      <button class="key d-up"    data-key="up"    disabled aria-label="Maju">&#9650;<small></small></button>
+      <button class="key d-left"  data-key="left"  disabled aria-label="Kiri">&#9664;<small></small></button>
+      <div class="key d-mid"></div>
+      <button class="key d-right" data-key="right" disabled aria-label="Kanan">&#9654;<small></small></button>
+      <button class="key d-down"  data-key="down"  disabled aria-label="Mundur">&#9660;<small></small></button>
+    </div>
+
+    <div class="centre">
+      <button class="key stop" data-key="stop" disabled aria-label="Berhenti">STOP<small></small></button>
+      <label class="hold"><input type="checkbox" id="holdMode" checked> Lepas D-pad = kirim stop</label>
+    </div>
+
+    <div class="cluster face">
+      <button class="key f-y" data-key="w" disabled>W<small></small></button>
+      <button class="key f-x" data-key="a" disabled>A<small></small></button>
+      <button class="key f-b" data-key="d" disabled>D<small></small></button>
+      <button class="key f-a" data-key="s" disabled>S<small></small></button>
+    </div>
+  </section>
+
+  <p class="tip">Keyboard: tombol panah untuk D-pad, Spasi untuk stop, W A S D untuk empat tombol di kanan. Ubah daftar perintah di bagian <code>MAP</code> pada kode.</p>
+
+  <section class="logwrap">
+    <h2>Log</h2>
+    <div id="log" aria-live="polite"></div>
+  </section>
+</main>
+
+<script>
+/* ====== Pengaturan perintah (ubah di sini) ====== */
+const MAP = {
+  up:'1', down:'2', left:'3', right:'4',   // D-pad
+  stop:'0',                                 // tombol STOP
+  w:'5', a:'6', s:'7', d:'8'                // tombol aksi
+};
+const STOP_CMD = MAP.stop;                  // dikirim saat tombol dilepas (mode tahan)
+const KEYS = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right', w:'w', a:'a', s:'s', d:'d',
+               ' ':'stop' };
+
+/* ====== Bluetooth: Nordic UART Service ====== */
+const NUS_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+// Karakteristik TX/RX dipilih otomatis lewat properti (notify / write), karena UUID micro:bit terbalik dari Nordic.
+
+class BleUart extends EventTarget {
+  constructor(){ super(); this.device=null; this.writeChar=null; this.notifyChar=null;
+    this.rx=''; this.queue=Promise.resolve(); this.dec=new TextDecoder(); this.enc=new TextEncoder(); }
+  async connect(){
+    this.device = await navigator.bluetooth.requestDevice({
+      filters:[{namePrefix:'BBC micro:bit'}], optionalServices:[NUS_SERVICE] });
+    this.device.addEventListener('gattserverdisconnected', ()=>this.dispatchEvent(new Event('disconnected')));
+    await this.attach();
+  }
+  async reconnect(){ if(!this.device) throw new Error('Belum pernah terhubung'); await this.attach(); }
+  async attach(){
+    this.stage='connect GATT';
+    const server = await this.device.gatt.connect();
+    this.stage='cari service UART';
+    const svc = await server.getPrimaryService(NUS_SERVICE);
+    this.stage='baca karakteristik';
+    let chars=[];
+    try{ chars = await svc.getCharacteristics(); }
+    catch(e){
+      for(const u of ['6e400002-b5a3-f393-e0a9-e50e24dcca9e','6e400003-b5a3-f393-e0a9-e50e24dcca9e']){
+        try{ chars.push(await svc.getCharacteristic(u)); }catch(_){}
+      }
+    }
+    this.dispatchEvent(new CustomEvent('diag',{detail:'Karakteristik: '+chars.map(c=>c.uuid.slice(4,8)+' ('+Object.keys(c.properties).filter(k=>c.properties[k]).join('/')+')').join(' | ')}));
+    this.notifyChar = chars.find(c=>c.properties.notify || c.properties.indicate);
+    this.writeChar = chars.find(c=>c.properties.write || c.properties.writeWithoutResponse);
+    if(!this.writeChar) throw new Error('Karakteristik UART tidak ditemukan. Pastikan micro:bit menjalankan bluetooth.startUartService()');
+    this.stage='aktifkan notifikasi';
+    if(this.notifyChar){
+      try{
+        this.notifyChar.addEventListener('characteristicvaluechanged', e=>this.onData(e.target.value));
+        await this.notifyChar.startNotifications();
+      }catch(e){
+        this.dispatchEvent(new CustomEvent('diag',{detail:'Peringatan: balasan dari micro:bit tidak aktif ('+e.name+': '+e.message+'). Perintah tetap bisa dikirim.'}));
+      }
+    } else {
+      this.dispatchEvent(new CustomEvent('diag',{detail:'Peringatan: karakteristik balasan tidak ditemukan. Perintah tetap bisa dikirim.'}));
+    }
+    this.stage='selesai';
+    this.rx='';
+    this.dispatchEvent(new Event('connected'));
+  }
+  onData(view){
+    this.rx += this.dec.decode(view);
+    let i;
+    while((i=this.rx.indexOf('\n'))>=0){
+      const line=this.rx.slice(0,i).trim(); this.rx=this.rx.slice(i+1);
+      if(line) this.dispatchEvent(new CustomEvent('line',{detail:line}));
+    }
+  }
+  send(cmd){
+    const bytes=this.enc.encode(cmd+'#');
+    const task=this.queue.then(async()=>{
+      for(let o=0;o<bytes.length;o+=20) await this.writeChar.writeValue(bytes.slice(o,o+20));
+    });
+    this.queue=task.catch(()=>{});
+    return task;
+  }
+  disconnect(){ if(this.device && this.device.gatt.connected) this.device.gatt.disconnect(); }
+}
+
+/* ====== UI ====== */
+const $ = s=>document.querySelector(s);
+const ble = new BleUart();
+const keys = [...document.querySelectorAll('.key[data-key]')];
+const logEl=$('#log'), statusEl=$('#status'), statusText=$('#statusText');
+const connectBtn=$('#connectBtn'), reconnectBtn=$('#reconnectBtn'), notice=$('#notice'), holdMode=$('#holdMode');
+let connected=false;
+
+keys.forEach(k=>{ k.querySelector('small').textContent = MAP[k.dataset.key]+'#'; });
+
+function log(text,cls){
+  const d=document.createElement('div'); d.className=cls||''; d.textContent=text; logEl.appendChild(d);
+  while(logEl.children.length>80) logEl.removeChild(logEl.firstChild);
+  logEl.scrollTop=logEl.scrollHeight;
+}
+function setState(s,text){
+  statusEl.dataset.s=s; statusText.textContent=text;
+  connected=(s==='connected');
+  keys.forEach(k=>k.disabled=!connected);
+  connectBtn.hidden = connected;
+  connectBtn.disabled = (s==='connecting');
+  reconnectBtn.hidden = !(s==='disconnected' && ble.device);
+}
+function showNotice(msg){ notice.textContent=msg; notice.style.display=msg?'block':'none'; }
+function sendCmd(cmd){
+  if(!connected) return;
+  log('Kirim: '+cmd+'#','tx');
+  ble.send(cmd).catch(err=>log('Gagal kirim: '+err.message,'er'));
+}
+
+if(!('bluetooth' in navigator)){
+  showNotice('Browser ini belum mendukung Web Bluetooth. Gunakan Chrome atau Edge di komputer atau Android, lewat HTTPS. Safari dan iPhone belum didukung.');
+  connectBtn.disabled=true;
+  log('Web Bluetooth tidak tersedia di browser ini.','er');
+} else {
+  log('Siap. Tekan Hubungkan, lalu pilih BBC micro:bit.','in');
+}
+
+async function doConnect(fn){
+  showNotice('');
+  setState('connecting','Menghubungkan…');
+  try{ await fn(); }
+  catch(err){
+    if(err && err.name==='NotFoundError'){ setState('idle','Belum terhubung'); log('Pemilihan perangkat dibatalkan.','in'); return; }
+    setState(ble.device?'disconnected':'idle', ble.device?'Terputus':'Belum terhubung');
+    showNotice('Gagal terhubung. Pastikan micro:bit menjalankan program UART, belum terhubung ke perangkat lain, dan Bluetooth aktif.');
+    log('Gagal di tahap ['+ble.stage+']: '+err.name+' - '+err.message,'er');
+  }
+}
+connectBtn.onclick=()=>doConnect(()=>ble.connect());
+reconnectBtn.onclick=()=>doConnect(()=>ble.reconnect());
+ble.addEventListener('connected',()=>{ setState('connected','Terhubung'); log('Terhubung ke '+ble.device.name,'rx'); });
+ble.addEventListener('disconnected',()=>{ setState('disconnected','Terputus'); log('Koneksi terputus.','er'); });
+ble.addEventListener('line',e=>log('Balasan: '+e.detail,'rx'));
+ble.addEventListener('diag',e=>log(e.detail,'in'));
+
+/* tombol layar (sentuh/mouse) */
+const held=new Set();
+function press(name,el){
+  if(held.has(name)) return; held.add(name); el&&el.classList.add('on'); sendCmd(MAP[name]);
+}
+function release(name,el){
+  if(!held.has(name)) return; held.delete(name); el&&el.classList.remove('on');
+  if(holdMode.checked && ['up','down','left','right'].includes(name)) sendCmd(STOP_CMD);
+}
+keys.forEach(k=>{
+  const name=k.dataset.key;
+  k.addEventListener('pointerdown',e=>{ e.preventDefault(); try{k.setPointerCapture(e.pointerId);}catch(_){} press(name,k); });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(t=>k.addEventListener(t,()=>release(name,k)));
+  k.addEventListener('contextmenu',e=>e.preventDefault());
+});
+
+/* keyboard */
+const byName=Object.fromEntries(keys.map(k=>[k.dataset.key,k]));
+addEventListener('keydown',e=>{
+  const n=KEYS[e.key]||KEYS[e.key.toLowerCase()]; if(!n||e.repeat) return;
+  e.preventDefault(); press(n,byName[n]);
+});
+addEventListener('keyup',e=>{
+  const n=KEYS[e.key]||KEYS[e.key.toLowerCase()]; if(!n) return;
+  e.preventDefault(); release(n,byName[n]);
+});
+addEventListener('blur',()=>[...held].forEach(n=>release(n,byName[n])));
+</script>
+</body>
+</html>
