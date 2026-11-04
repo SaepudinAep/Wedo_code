@@ -9,3 +9,6 @@ Hubungkan micro:bit, atau pilih keyboard untuk testing. Keyboard: satu pemain be
 ## Berapa pemain?
 
 Perintah 1 atau 3: paddle naik. Perintah 2 atau 4: paddle turun. Perintah 0: berhenti. Pemenang: yang pertama mencapai 5 poin.
+
+## Code makecode
+https://makecode.microbit.org/S15098-10437-36050-01415
