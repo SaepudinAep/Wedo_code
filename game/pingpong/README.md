@@ -5,6 +5,7 @@ Ringkasan hasil tahap ini, sebagai acuan sebelum pengembangan berikutnya. Lanjut
 - **File**: `pingpong-kernel.html` (satu file HTML + CSS + JavaScript, tanpa library; hanya font Fredoka dari Google Fonts)
 - **Tautan publikasi**: https://claude.ai/artifact/TdWzWhWZxs5sj8A2YSRZVM
 - **Status**: berjalan. Terhubung ke micro:bit dengan baik dan monitor masukan sudah dicoba.
+- **Code for** Microbit : https://makecode.microbit.org/S15098-10437-36050-01415
 
 ## 1. Yang sudah dibangun
 
