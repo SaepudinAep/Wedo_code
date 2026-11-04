@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ping Pong micro:bit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef0f6;--card:#fff;--ink:#1c2333;--muted:#5b657b;--line:#cdd3e0;--accent:#2f6df6;
+  --p1:#2f6df6;--p2:#e8800f;--ok:#12915a;--bad:#d63a3a;color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11141c;--card:#1d2332;--ink:#eef1f8;--muted:#9aa4bb;--line:#363d52;--accent:#6b9bff;
+  --p1:#6b9bff;--p2:#ffa43a;--ok:#3ccf8e;--bad:#ff6b6b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#11141c;--card:#1d2332;--ink:#eef1f8;--muted:#9aa4bb;--line:#363d52;--accent:#6b9bff;
+  --p1:#6b9bff;--p2:#ffa43a;--ok:#3ccf8e;--bad:#ff6b6b;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Fredoka',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-user-select:none;user-select:none}
+main{max-width:920px;margin:0 auto;padding:18px 16px 28px}
+.screen{display:none}.screen.on{display:block}
+h1{font-size:clamp(2rem,6vw,3.2rem);margin:.2em 0 .1em;line-height:1.05}
+h2{font-size:1.6rem;margin:.2em 0 .3em}
+p{margin:.3em 0 1em;color:var(--muted);line-height:1.45}
+.hero{text-align:center;padding:6vh 0 2vh}
+.hero .ball{display:inline-block;width:46px;height:46px;border-radius:50%;background:var(--ink);margin-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.center{justify-content:center}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{border:3px solid var(--accent);background:var(--accent);color:#fff;border-radius:16px;padding:12px 22px;font-weight:600;min-height:52px;font-size:1.05rem}
+.btn.alt{background:transparent;color:var(--accent)}
+.btn.big{padding:18px 26px;font-size:1.3rem;min-height:70px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.slot{background:var(--card);border:3px solid var(--line);border-left:10px solid var(--c,var(--line));border-radius:18px;padding:14px 16px}
+.slot h3{margin:0 0 4px;font-size:1.25rem;color:var(--c)}
+.slot .st{color:var(--muted);min-height:1.4em}
+.slot.full .st{color:var(--ink);font-weight:600}
+.slot .last{display:block;color:var(--muted);font-size:.85rem;font-weight:500}
+.slot .row{margin-top:10px}.slot .btn{min-height:44px;padding:8px 14px;font-size:.95rem}
+#msg{color:var(--bad);min-height:1.4em;font-weight:500}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.modes .btn{display:flex;flex-direction:column;align-items:center;gap:4px}
+.modes small{font-weight:500;opacity:.85;font-size:.9rem}
+.stage{position:relative}
+canvas{width:100%;height:auto;aspect-ratio:5/3;background:#101826;border-radius:18px;border:3px solid var(--line);display:block}
+#result{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(10,14,24,.78);border-radius:18px;color:#fff;text-align:center}
+#result.on{display:flex}
+#result h2{font-size:clamp(1.6rem,5vw,2.6rem);margin:0}
+.keys{color:var(--muted);font-size:.9rem;margin-top:10px}
+#monitor{display:none;margin-top:22px}
+#monitor.on{display:block}
+#monitor header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+#monitor h3{margin:0;font-size:1.1rem}
+#log{background:var(--card);border:2px solid var(--line);border-radius:14px;height:200px;overflow:auto;padding:10px 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;-webkit-user-select:text;user-select:text}
+#log div{padding:1px 0;white-space:pre-wrap;word-break:break-all}
+.l-rx{color:var(--muted)}.l-cmd{color:var(--ok);font-weight:600}.l-kb{color:var(--accent)}.l-warn{color:var(--bad)}
+.mini{min-height:38px!important;padding:6px 12px!important;font-size:.9rem!important}
+@media (max-width:520px){main{padding:12px 12px 22px}.btn.big{font-size:1.1rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+
+<section class="screen on" id="home">
+  <div class="hero">
+    <span class="ball"></span>
+    <h1>Ping Pong micro:bit</h1>
+    <p>Main dengan micro:bit atau keyboard. Pilih 1 atau 2 pemain.</p>
+    <div class="row center"><button class="btn big" id="start">Mulai</button></div>
+  </div>
+</section>
+
+<section class="screen" id="connect">
+  <h2>Hubungkan pemain</h2>
+  <p>Hubungkan micro:bit, atau pilih keyboard untuk testing. Keyboard: satu pemain bebas memakai panah atau WASD; dua pemain, Player 1 memakai panah dan Player 2 memakai WASD.</p>
+  <div class="slots" id="slots"></div>
+  <p id="msg" role="status"></p>
+  <div class="row"><button class="btn alt" id="toHome">Kembali</button><button class="btn" id="toMode">Lanjut</button></div>
+</section>
+
+<section class="screen" id="mode">
+  <h2>Berapa pemain?</h2>
+  <div class="modes">
+    <button class="btn big" id="btn1">1 Player<small>Lawan komputer</small></button>
+    <button class="btn big" id="btn2">2 Player<small>Dua pemain berhadapan</small></button>
+  </div>
+  <p id="modeHint" style="margin-top:14px"></p>
+  <div class="row"><button class="btn alt" id="backConnect">Kembali</button></div>
+</section>
+
+<section class="screen" id="game">
+  <div class="stage">
+    <canvas id="cv" width="800" height="480"></canvas>
+    <div id="result"><h2 id="resText"></h2><button class="btn big" id="toLobby">Kembali ke lobi</button></div>
+  </div>
+  <div class="row"><button class="btn alt" id="quit">Keluar ke lobi</button></div>
+  <p class="keys">Perintah 1 atau 3: paddle naik. Perintah 2 atau 4: paddle turun. Perintah 0: berhenti. Pemenang: yang pertama mencapai 5 poin.</p>
+</section>
+
+<section id="monitor" aria-label="Monitor masukan">
+  <header>
+    <h3>Monitor masukan</h3>
+    <div class="row" style="margin:0">
+      <button class="btn alt mini" id="logPause">Jeda</button>
+      <button class="btn alt mini" id="logClear">Bersihkan</button>
+    </div>
+  </header>
+  <div id="log" aria-live="off"></div>
+  <p class="keys">RX = data mentah dari micro:bit (teks dan byte heksadesimal, ↵ = newline). Baris hijau = perintah yang dibaca kernel.</p>
+</section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const MAX_PLAYERS = 4;
+
+/* ================= KERNEL =================
+   Mengurus koneksi micro:bit (BLE UART), slot pemain, keyboard sebagai sumber masukan,
+   dan menyiarkan kejadian standar: Kernel.on('input', {player, cmd, source}). */
+const Kernel = (() => {
+  const NUS = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+  const subs = {};
+  const on = (e, f) => { (subs[e] = subs[e] || []).push(f); };
+  const emit = (e, d) => (subs[e] || []).forEach(f => f(d));
+  const slots = Array.from({length: MAX_PLAYERS}, (_, i) =>
+    ({n: i + 1, type: null, name: '', link: null, scheme: null, last: '', rx: ''}));
+  const k = { slots, limit: 2, on, emit, btSupported: 'bluetooth' in navigator };
+  k.visible = () => slots.slice(0, k.limit);
+  k.filled = () => k.visible().filter(s => s.type);
+
+  function clear(s){ s.type = null; s.name = ''; s.link = null; s.scheme = null; s.last = ''; s.rx = ''; }
+  function recompute(){
+    const kb = slots.filter(s => s.type === 'keyboard');
+    kb.forEach((s, i) => s.scheme = kb.length === 1 ? 'both' : (i === 0 ? 'arrows' : 'wasd'));
+    emit('players');
+  }
+  function input(s, cmd){ s.last = cmd; emit('input', {player: s.n, cmd, source: s.type}); }
+
+  // Pesan micro:bit: "N#" (atau baris berakhir newline, mis. "Mbit:3")
+  function feed(s, text){
+    s.rx += text;
+    let m;
+    while ((m = /[#\n]/.exec(s.rx))) {
+      const tok = s.rx.slice(0, m.index); s.rx = s.rx.slice(m.index + 1);
+      const d = /(\d+)\s*$/.exec(tok);
+      if (d) input(s, d[1]);
+    }
+  }
+
+  k.addMicrobit = async n => {
+    const s = slots[n - 1];
+    const dev = await navigator.bluetooth.requestDevice({filters: [{namePrefix: 'BBC micro:bit'}], optionalServices: [NUS]});
+    if (slots.some(x => x.link && x.link.dev === dev)) throw new Error('micro:bit ini sudah terhubung di slot lain');
+    const server = await dev.gatt.connect();
+    const svc = await server.getPrimaryService(NUS);
+    const chars = await svc.getCharacteristics();
+    // UUID TX/RX micro:bit terbalik dari Nordic, jadi dipilih lewat properti
+    const nf = chars.find(c => c.properties.notify || c.properties.indicate);
+    const wr = chars.find(c => c.properties.write || c.properties.writeWithoutResponse);
+    if (s.type) { dev.gatt.disconnect(); return; }
+    const dec = new TextDecoder();
+    if (nf) {
+      try {
+        nf.addEventListener('characteristicvaluechanged', e => {
+          const v = e.target.value, t = dec.decode(v);
+          emit('raw', {player: s.n, text: t, bytes: Array.from(new Uint8Array(v.buffer, v.byteOffset, v.byteLength))});
+          feed(s, t);
+        });
+        await nf.startNotifications();
+      } catch (err) { emit('warn', err.message); }
+    }
+    s.type = 'microbit'; s.name = dev.name || 'micro:bit'; s.link = {dev, wr}; s.rx = '';
+    dev.addEventListener('gattserverdisconnected', () => {
+      if (s.link && s.link.dev === dev) { clear(s); recompute(); }
+    });
+    recompute();
+  };
+  k.addKeyboard = n => { const s = slots[n - 1]; if (s.type) return; s.type = 'keyboard'; s.name = 'Keyboard'; recompute(); };
+  k.release = n => {
+    const s = slots[n - 1];
+    if (s.type === 'microbit' && s.link) { const d = s.link.dev; clear(s); try { d.gatt.disconnect(); } catch (_) {} }
+    else clear(s);
+    recompute();
+  };
+  k.send = (n, text) => {   // kirim perintah ke micro:bit (disiapkan untuk game berikutnya)
+    const s = slots[n - 1];
+    if (s.type === 'microbit' && s.link.wr) return s.link.wr.writeValue(new TextEncoder().encode(text + '#'));
+  };
+
+  // Keyboard sebagai sumber masukan: panah dan/atau WASD -> perintah 1..4, lepas -> 0
+  const SETS = {arrows: {ArrowUp:'1', ArrowDown:'2', ArrowLeft:'3', ArrowRight:'4'}, wasd: {w:'1', s:'2', a:'3', d:'4'}};
+  const held = new Map();
+  const keyCmd = (s, key) => {
+    for (const set of (s.scheme === 'both' ? ['arrows', 'wasd'] : [s.scheme])) { const c = SETS[set][key]; if (c) return c; }
+  };
+  const kname = e => e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  addEventListener('keydown', e => {
+    const key = kname(e);
+    slots.forEach(s => {
+      if (s.type !== 'keyboard') return;
+      const c = keyCmd(s, key); if (!c) return;
+      e.preventDefault();
+      if (e.repeat) return;
+      const h = held.get(s.n) || []; h.push([key, c]); held.set(s.n, h);
+      input(s, c);
+    });
+  });
+  addEventListener('keyup', e => {
+    const key = kname(e);
+    slots.forEach(s => {
+      if (s.type !== 'keyboard') return;
+      const h = held.get(s.n) || [], before = h.length;
+      const rest = h.filter(x => x[0] !== key);
+      if (rest.length === before) return;
+      held.set(s.n, rest);
+      input(s, rest.length ? rest[rest.length - 1][1] : '0');
+    });
+  });
+  addEventListener('blur', () => slots.forEach(s => { if (s.type === 'keyboard' && (held.get(s.n) || []).length) { held.set(s.n, []); input(s, '0'); } }));
+  return k;
+})();
+
+/* ================= GAME: PING PONG ================= */
+const Game = (() => {
+  const cv = $('#cv'), x = cv.getContext('2d');
+  const W = 800, H = 480, PH = 90, PW = 14, R = 9, WIN = 5;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  let st = null, raf = 0, t0 = 0;
+
+  function serve(dir){
+    const a = (Math.random() - .5) * .8;
+    st.ball = {x: W / 2, y: H / 2, vx: dir * 380, vy: 380 * Math.sin(a)};
+    st.wait = 1;
+  }
+  function start(n, map){
+    st = {n, map, over: false, p: [{y: H / 2 - PH / 2, dir: 0, s: 0}, {y: H / 2 - PH / 2, dir: 0, s: 0}]};
+    serve(Math.random() < .5 ? -1 : 1);
+    $('#result').classList.remove('on');
+    cancelAnimationFrame(raf); t0 = performance.now(); raf = requestAnimationFrame(loop);
+  }
+  function stop(){ cancelAnimationFrame(raf); st = null; }
+  const running = () => !!st;
+  const playersOk = () => st && Object.keys(st.map).every(n => Kernel.slots[n - 1].type);
+
+  function hit(b, p){
+    b.vx = clamp(-b.vx * 1.06, -760, 760);
+    b.vy = clamp(b.vy + ((b.y - (p.y + PH / 2)) / (PH / 2)) * 220, -520, 520);
+  }
+  function point(i){
+    st.p[i].s++;
+    if (st.p[i].s >= WIN) {
+      st.over = true;
+      $('#resText').textContent = st.n === 1 ? (i === 0 ? 'Kamu menang!' : 'Komputer menang') : 'Player ' + (i + 1) + ' menang!';
+      $('#result').classList.add('on');
+    } else serve(i === 0 ? 1 : -1);
+  }
+  function step(dt){
+    if (st.over) return;
+    const b = st.ball;
+    st.p.forEach((p, i) => {
+      if (i === 1 && st.n === 1) {              // paddle komputer
+        const c = p.y + PH / 2;
+        const d = (b.vx > 0 && Math.abs(b.y - c) > 12) ? (b.y > c ? 1 : -1) : 0;
+        p.y = clamp(p.y + d * 250 * dt, 0, H - PH);
+      } else p.y = clamp(p.y + p.dir * 420 * dt, 0, H - PH);
+    });
+    if (st.wait > 0) { st.wait -= dt; return; }
+    b.x += b.vx * dt; b.y += b.vy * dt;
+    if (b.y < R) { b.y = R; b.vy = Math.abs(b.vy); }
+    if (b.y > H - R) { b.y = H - R; b.vy = -Math.abs(b.vy); }
+    const L = st.p[0], Rt = st.p[1];
+    if (b.vx < 0 && b.x - R < 30 + PW && b.x > 20 && b.y > L.y - R && b.y < L.y + PH + R) { b.x = 30 + PW + R; hit(b, L); }
+    if (b.vx > 0 && b.x + R > W - 30 - PW && b.x < W - 20 && b.y > Rt.y - R && b.y < Rt.y + PH + R) { b.x = W - 30 - PW - R; hit(b, Rt); }
+    if (b.x < -R) point(1);
+    else if (b.x > W + R) point(0);
+  }
+  function draw(){
+    x.fillStyle = '#101826'; x.fillRect(0, 0, W, H);
+    x.strokeStyle = 'rgba(255,255,255,.25)'; x.lineWidth = 4; x.setLineDash([14, 14]);
+    x.beginPath(); x.moveTo(W / 2, 0); x.lineTo(W / 2, H); x.stroke(); x.setLineDash([]);
+    x.fillStyle = '#4b83ff'; x.fillRect(30, st.p[0].y, PW, PH);
+    x.fillStyle = '#ff9a2e'; x.fillRect(W - 30 - PW, st.p[1].y, PW, PH);
+    x.fillStyle = '#fff'; x.beginPath(); x.arc(st.ball.x, st.ball.y, R, 0, 7); x.fill();
+    x.font = '700 56px Fredoka, system-ui, sans-serif'; x.textAlign = 'center';
+    x.fillStyle = '#4b83ff'; x.fillText(st.p[0].s, W / 2 - 80, 70);
+    x.fillStyle = '#ff9a2e'; x.fillText(st.p[1].s, W / 2 + 80, 70);
+    x.font = '500 18px Fredoka, system-ui, sans-serif'; x.fillStyle = 'rgba(255,255,255,.7)';
+    x.fillText(st.n === 1 ? 'Kamu' : 'Player 1', W / 4, H - 16);
+    x.fillText(st.n === 1 ? 'Komputer' : 'Player 2', W * 3 / 4, H - 16);
+  }
+  function loop(t){
+    if (!st) return;
+    const dt = Math.min(.05, (t - t0) / 1000); t0 = t;
+    step(dt); draw();
+    if (st) raf = requestAnimationFrame(loop);
+  }
+  Kernel.on('input', ({player, cmd}) => {
+    if (!st || !'01234'.includes(cmd) || cmd.length !== 1) return;
+    const i = st.map[player]; if (i === undefined) return;
+    st.p[i].dir = (cmd === '1' || cmd === '3') ? -1 : (cmd === '2' || cmd === '4') ? 1 : 0;
+  });
+  return {start, stop, running, playersOk};
+})();
+
+/* ================= LAYAR / MENU ================= */
+const screens = {home: $('#home'), connect: $('#connect'), mode: $('#mode'), game: $('#game')};
+const show = n => {
+  for (const k in screens) screens[k].classList.toggle('on', k === n);
+  $('#monitor').classList.toggle('on', n !== 'home');
+};
+const msg = t => { $('#msg').textContent = t || ''; };
+let busy = 0;
+
+function schemeText(s){ return s.scheme === 'both' ? 'panah atau WASD' : s.scheme === 'arrows' ? 'tombol panah' : 'tombol WASD'; }
+
+function renderSlots(){
+  const box = $('#slots'); box.innerHTML = '';
+  Kernel.visible().forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'slot' + (s.type ? ' full' : '');
+    d.style.setProperty('--c', s.n === 1 ? 'var(--p1)' : 'var(--p2)');
+    const h = document.createElement('h3'); h.textContent = 'Player ' + s.n; d.appendChild(h);
+    const st = document.createElement('div'); st.className = 'st';
+    st.textContent = !s.type ? 'Belum ada perangkat' : s.type === 'keyboard' ? 'Keyboard (' + schemeText(s) + ')' : s.name;
+    d.appendChild(st);
+    if (s.type) { const l = document.createElement('span'); l.className = 'last'; l.dataset.last = s.n; l.textContent = s.last ? 'Perintah terakhir: ' + s.last + '#' : ''; d.appendChild(l); }
+    const row = document.createElement('div'); row.className = 'row';
+    const mk = (text, fn, alt, dis) => { const b = document.createElement('button'); b.className = 'btn' + (alt ? ' alt' : ''); b.textContent = text; b.disabled = !!dis; b.onclick = fn; row.appendChild(b); };
+    if (!s.type) {
+      mk(busy === s.n ? 'Menghubungkan…' : 'Hubungkan micro:bit', () => connectMB(s.n), false, !Kernel.btSupported || busy);
+      mk('Pakai keyboard', () => Kernel.addKeyboard(s.n), true, busy);
+    } else mk('Lepas', () => Kernel.release(s.n), true);
+    d.appendChild(row); box.appendChild(d);
+  });
+  const n = Kernel.filled().length;
+  $('#toMode').disabled = n < 1;
+  $('#btn1').disabled = n < 1;
+  $('#btn2').disabled = n < 2;
+  $('#modeHint').textContent = n < 1 ? 'Belum ada pemain. Kembali dan hubungkan micro:bit atau pilih keyboard.'
+    : n < 2 ? '2 Player aktif setelah dua pemain terhubung. Kembali untuk menambah pemain.' : '';
+  if (!Kernel.btSupported) msg('Browser ini belum mendukung Web Bluetooth. Pakai Chrome atau Edge (HTTPS) untuk micro:bit; keyboard tetap bisa dipakai.');
+}
+
+async function connectMB(n){
+  msg(''); busy = n; renderSlots();
+  try { await Kernel.addMicrobit(n); }
+  catch (err) {
+    if (!(err && err.name === 'NotFoundError'))
+      msg('Gagal menghubungkan: ' + err.message + '. Pastikan micro:bit menjalankan program UART dan tidak terhubung ke perangkat lain.');
+  }
+  busy = 0; renderSlots();
+}
+
+Kernel.on('players', () => {
+  renderSlots();
+  if (Game.running() && !Game.playersOk()) { Game.stop(); show('connect'); msg('Ada pemain yang terputus. Hubungkan lagi lalu lanjut.'); }
+});
+Kernel.on('input', ({player, cmd}) => {
+  const el = document.querySelector('[data-last="' + player + '"]');
+  if (el) el.textContent = 'Perintah terakhir: ' + cmd + '#';
+});
+Kernel.on('warn', t => msg('Peringatan: balasan dari micro:bit tidak aktif (' + t + '). Perintah tetap bisa dikirim.'));
+
+/* Monitor masukan: data mentah dan perintah yang dibaca kernel */
+const logEl = $('#log');
+let paused = false;
+const vis = t => t.replace(/\n/g, '↵').replace(/\r/g, '␍');
+function ts(){ const d = new Date(); return d.toTimeString().slice(0, 8) + '.' + String(d.getMilliseconds()).padStart(3, '0'); }
+function logLine(cls, text){
+  if (paused) return;
+  const d = document.createElement('div'); d.className = cls; d.textContent = ts() + '  ' + text;
+  logEl.appendChild(d);
+  while (logEl.children.length > 150) logEl.removeChild(logEl.firstChild);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+Kernel.on('raw', ({player, text, bytes}) => logLine('l-rx', 'RX P' + player + '  "' + vis(text) + '"  [' + bytes.map(b => b.toString(16).padStart(2, '0')).join(' ') + ']'));
+Kernel.on('input', ({player, cmd, source}) => logLine(source === 'keyboard' ? 'l-kb' : 'l-cmd', '→ P' + player + '  cmd ' + cmd + '#  (' + source + ')'));
+Kernel.on('warn', t => logLine('l-warn', 'Peringatan: ' + t));
+Kernel.on('players', () => logLine('l-rx', 'Pemain: ' + Kernel.slots.slice(0, Kernel.limit).map(s => 'P' + s.n + '=' + (s.type || '-')).join('  ')));
+$('#logClear').onclick = () => { logEl.innerHTML = ''; };
+$('#logPause').onclick = e => { paused = !paused; e.target.textContent = paused ? 'Lanjutkan' : 'Jeda'; };
+
+function startGame(n){
+  const f = Kernel.filled();
+  const map = n === 2 ? {1: 0, 2: 1} : {[f[0].n]: 0};
+  show('game'); Game.start(n, map);
+}
+$('#start').onclick = () => { show('connect'); renderSlots(); };
+$('#toHome').onclick = () => show('home');
+$('#toMode').onclick = () => { msg(''); show('mode'); renderSlots(); };
+$('#backConnect').onclick = () => show('connect');
+$('#btn1').onclick = () => startGame(1);
+$('#btn2').onclick = () => startGame(2);
+const lobby = () => { Game.stop(); show('connect'); renderSlots(); };
+$('#toLobby').onclick = lobby;
+$('#quit').onclick = lobby;
+renderSlots();
+</script>
+</body>
+</html>
